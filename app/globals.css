@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --background: #080b12;
+  --foreground: #f5f7fb;
+  --muted: #9aa4b5;
+  --line: rgba(255,255,255,.12);
+  --glass: rgba(255,255,255,.055);
+  --accent: #9b8cff;
+  --accent-2: #65d6c4;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 15% 5%, rgba(117,94,255,.18), transparent 34rem),
+    radial-gradient(ellipse at 85% 25%, rgba(45,205,184,.10), transparent 30rem),
+    var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+::selection { background: rgba(155,140,255,.35); }
+
+.container { width: min(1160px, calc(100% - 40px)); margin-inline: auto; }
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  box-shadow: 0 20px 80px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.07);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+.gradient-text {
+  background: linear-gradient(100deg, #fff 10%, #b6aaff 55%, #75e4d1 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.grid-glow {
+  background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
