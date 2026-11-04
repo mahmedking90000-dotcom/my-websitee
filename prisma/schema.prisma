@@ -413,24 +413,3 @@ model EmailVerificationToken {
  createdAt DateTime @default(now())
  @@index([userId,expiresAt])
 }
-
-model Faq {
- id String @id @default(cuid())
- question Json
- answer Json
- isActive Boolean @default(true)
- sortOrder Int @default(0)
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
-}
-model Testimonial {
- id String @id @default(cuid())
- name String
- role Json?
- content Json
- rating Int @default(5)
- isActive Boolean @default(false)
- sortOrder Int @default(0)
- createdAt DateTime @default(now())
- updatedAt DateTime @updatedAt
-}
