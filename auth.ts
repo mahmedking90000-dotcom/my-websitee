@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
@@ -7,7 +7,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-const providers: any[] = [
+const providers: NextAuthConfig["providers"] = [
   Credentials({
     credentials: {
       email: { type: "email" },
@@ -19,7 +19,7 @@ const providers: any[] = [
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user?.passwordHash || !user.emailVerified) return null;
       if (!(await compare(credentials.password, user.passwordHash))) return null;
-      return { id: user.id, name: user.name, email: user.email, role: user.role } as any;
+      return { id: user.id, name: user.name, email: user.email, role: user.role };
     }
   })
 ];
@@ -50,19 +50,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           select: { role: true, name: true, email: true }
         });
         if (currentUser) {
-          (token as any).role = currentUser.role;
+          token.role = currentUser.role;
           token.name = currentUser.name ?? token.name;
           token.email = currentUser.email;
         } else {
-          (token as any).role = "CLIENT";
+          token.role = "CLIENT";
         }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.sub;
-        (session.user as any).role = (token as any).role ?? "CLIENT";
+        if (token.sub) session.user.id = token.sub;
+        session.user.role = token.role ?? "CLIENT";
       }
       return session;
     }
