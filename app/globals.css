@@ -437,3 +437,6 @@ html[data-theme="light"] .nova-auth-error { color: #9f1239; background: rgba(244
 html[data-theme="light"] .nova-auth-notice { color: #166534; background: rgba(34,197,94,.10); }
 @media (max-width: 640px) { .nova-ambient-toggle { left: 12px; bottom: 12px; padding: 10px 12px; } .nova-ambient-toggle span { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { .nova-ambient-orb { animation: none !important; } .nova-ambient-toggle { transition: none; } }
+
+/* Let the global ambient layer show through the app shell while body supplies the base color. */
+.site-shell { background-color: transparent !important; }
