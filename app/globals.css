@@ -120,3 +120,14 @@ html[data-theme="light"] .glass {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+
+/* Keep primary CTA text readable regardless of inherited theme styles. */
+.site-shell[data-theme="dark"] .nova-primary {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+}
+.site-shell[data-theme="light"] .nova-primary {
+  color: #ffffff !important;
+  background-color: #20243a !important;
+}
