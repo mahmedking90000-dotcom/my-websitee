@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ArrowUpLeft, ArrowDownLeft, Sparkles, Code2, ShoppingBag, Palette, Layers3, Zap, Menu, X, Sun, Moon, MessageCircle, Check } from "lucide-react";
 
 const wa = "https://wa.me/201116013702";
-const content: Record<"ar" | "en", any> = {
+const content = {
   ar: {
     nav: ["الرئيسية", "خدماتنا", "أعمالنا", "طريقة العمل", "الباقات"],
     lang: "English", start: "ابدأ مشروعك", tag: "شريكك الإبداعي في العالم الرقمي",
@@ -37,7 +37,7 @@ const content: Record<"ar" | "en", any> = {
     contact: "Have an idea? Let's build it.", contactText: "Tell us about your project and goals, and we'll help you choose the right next step.",
     whatsapp: "Chat on WhatsApp", theme: "Toggle appearance", footer: "© 2026 NOVA. All rights reserved."
   }
-};
+} as const;
 const icons = [Code2, ShoppingBag, Palette, Layers3, Zap, Sparkles];
 
 export default function Home() {
