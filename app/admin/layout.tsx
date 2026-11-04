@@ -16,7 +16,7 @@ const navigation = [
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
-  if (!session?.user) redirect("/login");
+  if (!session?.user) redirect("/login?callbackUrl=%2Fadmin");
   const role = (session.user as { role?: string }).role;
   if (!["ADMIN", "SUPER_ADMIN", "PROJECT_MANAGER", "SUPPORT_AGENT"].includes(role ?? "")) redirect("/portal");
 
