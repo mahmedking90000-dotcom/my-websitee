@@ -50,7 +50,7 @@ export default function Home() {
   const message = lang === "ar" ? "مرحبًا، أريد الاستفسار عن خدمات NOVA وبدء مشروع." : "Hello, I'd like to ask about NOVA services and start a project.";
 
   return (
-    <main dir={direction} lang={lang} data-theme={light ? "light" : "dark"} className="min-h-screen overflow-hidden bg-[#080b14] text-white transition-colors">
+    <main dir={direction} lang={lang} data-theme={light ? "light" : "dark"} className="site-shell min-h-screen overflow-hidden bg-[#080b14] text-white transition-colors">
       <div className="pointer-events-none fixed inset-0 -z-0 opacity-60" style={{backgroundImage:"radial-gradient(ellipse at 15% 5%,rgba(117,94,255,.2),transparent 35rem),radial-gradient(ellipse at 85% 25%,rgba(45,205,184,.12),transparent 30rem)"}} />
       <header className="container relative z-20 mx-auto flex max-w-6xl items-center justify-between border-b border-white/10 px-5 py-5">
         <a href="#home" className="flex items-center gap-3 text-xl font-bold tracking-[.2em]"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-white to-violet-300 text-slate-950"><Sparkles size={21}/></span>NOVA<span className="text-violet-300">.</span></a>
