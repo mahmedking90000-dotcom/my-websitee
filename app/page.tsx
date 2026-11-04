@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ChatbotWidget from "@/components/chatbot-widget";
 import { ArrowUpLeft, ArrowDownLeft, Sparkles, Code2, ShoppingBag, Palette, Layers3, Zap, Menu, X, Sun, Moon, MessageCircle, Check } from "lucide-react";
 
 const wa = "https://wa.me/201116013702";
@@ -108,6 +109,7 @@ export default function Home() {
 
       <footer className="container relative z-10 mx-auto flex max-w-6xl flex-col justify-between gap-4 border-t border-white/10 px-5 py-8 text-xs text-white/40 sm:flex-row"><span className="font-bold tracking-[.2em] text-white/70">NOVA.</span><span>{t.footer}</span><a href="#home">{lang==="ar"?"العودة للأعلى ↑":"Back to top ↑"}</a></footer>
       <a href={link(message)} aria-label="WhatsApp" className="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-2xl border border-white/30 bg-emerald-300 text-emerald-950 shadow-xl shadow-emerald-500/20 transition hover:-translate-y-1"><MessageCircle size={24}/></a>
+    <ChatbotWidget locale={lang} />
     </main>
   );
 }
