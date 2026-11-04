@@ -12,7 +12,7 @@ const demos=[
  ["demo-video-brand","Motion — فيديو هوية","فيديو تجريبي للعرض فقط","photo-1492619375914-88005aa9e8fb","https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"],
  ["demo-video-product","Product — فيديو منتج","فيديو تجريبي للعرض فقط","photo-1523275335684-37898b6baf30","https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"],
  ["demo-video-travel","Travel — إعلان سياحي","فيديو تجريبي للعرض فقط","photo-1500530855697-b586d89ba3ee","https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"],
- ["demo-video-lifestyle","Life — فيديو أسلوب حياة","فيديو تجريبي للعرض فقط","photo- lifestyle","https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"],
+ ["demo-video-lifestyle","Life — فيديو أسلوب حياة","فيديو تجريبي للعرض فقط","photo-1492684223066-81342ee5ff30","https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"],
  ["demo-video-tech","Tech — عرض تقني","فيديو تجريبي للعرض فقط","photo-1518770660439-4636190af475","https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"],
  ["demo-video-brand-film","Studio — فيلم قصير","فيديو تجريبي للعرض فقط","photo-1497366811353-6870744d04b2","https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"]
 ] as const;
