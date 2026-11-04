@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import Link from "next/link";
 
 type RegisterValues = { name: string; email: string; phone: string; password: string };
