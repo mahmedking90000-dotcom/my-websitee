@@ -75,6 +75,8 @@ model User {
   contactRequests ContactRequest[]
   chatConversations ChatConversation[]
   auditLogs      AuditLog[]     @relation("AuditActor")
+  passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -389,4 +391,25 @@ model SiteSetting {
   key       String   @unique
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+model PasswordResetToken {
+ id String @id @default(cuid())
+ userId String
+ tokenHash String @unique
+ expiresAt DateTime
+ usedAt DateTime?
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ createdAt DateTime @default(now())
+ @@index([userId,expiresAt])
+}
+model EmailVerificationToken {
+ id String @id @default(cuid())
+ userId String
+ tokenHash String @unique
+ expiresAt DateTime
+ usedAt DateTime?
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ createdAt DateTime @default(now())
+ @@index([userId,expiresAt])
 }

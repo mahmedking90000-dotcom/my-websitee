@@ -16,7 +16,12 @@
     "react": "latest",
     "react-dom": "latest",
     "lucide-react": "latest",
-    "@prisma/client": "^6.16.2"
+    "@prisma/client": "^6.16.2",
+    "next-auth": "^5.0.0-beta.30",
+    "@auth/prisma-adapter": "^2.11.1",
+    "bcryptjs": "^3.0.2",
+    "zod": "^4.1.12",
+    "nodemailer": "^7.0.10"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
