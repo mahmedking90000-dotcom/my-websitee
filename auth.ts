@@ -5,7 +5,8 @@ import Facebook from "next-auth/providers/facebook";
 import Twitter from "next-auth/providers/twitter";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
-import { prisma } from "@/lib/prisma";\nimport { UserRole } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { UserRole } from "@prisma/client";
 
 const providers: NextAuthConfig["providers"] = [
   Credentials({
