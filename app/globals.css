@@ -45,3 +45,22 @@ button { font: inherit; }
   background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black, transparent 85%);
 }
+
+
+.site-shell[data-theme="light"] { background: #f4f6fb !important; color: #171a2b !important; }
+.site-shell[data-theme="light"] [class*="text-white"] { color: #30364a !important; }
+.site-shell[data-theme="light"] .bg-\[\#080b14\] { background: #f4f6fb !important; }
+.site-shell[data-theme="light"] [class*="bg-white/"] { background-color: rgba(255,255,255,.72) !important; }
+.site-shell[data-theme="light"] [class*="border-white/"] { border-color: rgba(32,43,69,.14) !important; }
+.site-shell[data-theme="light"] .bg-white { background: #171a2b !important; color: #fff !important; }
+.site-shell[data-theme="light"] .from-white { --tw-gradient-from: #171a2b var(--tw-gradient-from-position) !important; }
+.site-shell[data-theme="light"] .to-slate-950 { --tw-gradient-to: #e7eaf3 var(--tw-gradient-to-position) !important; }
+.site-shell[data-theme="light"] nav.bg-slate-950 { background: #fff !important; }
+.site-shell[data-theme="light"] .text-slate-950 { color: #fff !important; }
+@media (max-width: 640px) {
+  .site-shell h1 { letter-spacing: -.035em; }
+  .site-shell section { scroll-margin-top: 76px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-shell *, .site-shell *::before, .site-shell *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
