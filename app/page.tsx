@@ -46,7 +46,7 @@ export default function Home() {
   const [light, setLight] = useState(false);
   const [open, setOpen] = useState(false);
   useEffect(() => { const savedTheme = localStorage.getItem("nova-theme"); if (savedTheme) setLight(savedTheme === "light"); const savedLang = localStorage.getItem("nova-lang"); if (savedLang === "ar" || savedLang === "en") setLang(savedLang); }, []);
-  useEffect(() => { localStorage.setItem("nova-theme", light ? "light" : "dark"); }, [light]);
+  useEffect(() => { const theme = light ? "light" : "dark"; localStorage.setItem("nova-theme", theme); document.documentElement.dataset.theme = theme; document.documentElement.style.colorScheme = theme; }, [light]);
   useEffect(() => { localStorage.setItem("nova-lang", lang); }, [lang]);
   const t = content[lang];
   const direction = lang === "ar" ? "rtl" : "ltr";
