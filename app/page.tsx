@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import ChatbotWidget from "@/components/chatbot-widget";
 import { ArrowUpLeft, ArrowDownLeft, Sparkles, Code2, ShoppingBag, Palette, Layers3, Zap, Menu, X, Sun, Moon, MessageCircle, Check } from "lucide-react";
 
 const wa = "https://wa.me/201116013702";
-const content: Record<"ar" | "en", any> = {
+const content = {
   ar: {
     nav: ["الرئيسية", "خدماتنا", "أعمالنا", "طريقة العمل", "الباقات"],
     lang: "English", start: "ابدأ مشروعك", tag: "شريكك الإبداعي في العالم الرقمي",
@@ -37,13 +38,16 @@ const content: Record<"ar" | "en", any> = {
     contact: "Have an idea? Let's build it.", contactText: "Tell us about your project and goals, and we'll help you choose the right next step.",
     whatsapp: "Chat on WhatsApp", theme: "Toggle appearance", footer: "© 2026 NOVA. All rights reserved."
   }
-};
+} as const;
 const icons = [Code2, ShoppingBag, Palette, Layers3, Zap, Sparkles];
 
 export default function Home() {
   const [lang, setLang] = useState<"ar" | "en">("ar");
   const [light, setLight] = useState(false);
   const [open, setOpen] = useState(false);
+  useEffect(() => { const savedTheme = localStorage.getItem("nova-theme"); if (savedTheme) setLight(savedTheme === "light"); const savedLang = localStorage.getItem("nova-lang"); if (savedLang === "ar" || savedLang === "en") setLang(savedLang); }, []);
+  useEffect(() => { localStorage.setItem("nova-theme", light ? "light" : "dark"); }, [light]);
+  useEffect(() => { localStorage.setItem("nova-lang", lang); }, [lang]);
   const t = content[lang];
   const direction = lang === "ar" ? "rtl" : "ltr";
   const link = (message: string) => wa + "?text=" + encodeURIComponent(message);
@@ -55,12 +59,12 @@ export default function Home() {
       <header className="container relative z-20 mx-auto flex max-w-6xl items-center justify-between border-b border-white/10 px-5 py-5">
         <a href="#home" className="flex items-center gap-3 text-xl font-bold tracking-[.2em]"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-white to-violet-300 text-slate-950"><Sparkles size={21}/></span>NOVA<span className="text-violet-300">.</span></a>
         <nav className={(open ? "absolute left-5 right-5 top-20 grid rounded-2xl border border-white/10 bg-slate-950 p-4 shadow-2xl " : "hidden ") + "z-30 gap-4 text-sm text-white/70 md:static md:flex md:border-0 md:bg-transparent md:p-0 md:shadow-none"}>
-          {t.nav.map((n,i)=><a key={n} href={["#home","#services","#work","#process","#pricing"][i]} onClick={()=>setOpen(false)} className="hover:text-white">{n}</a>)}
+          {t.nav.map((n: string,i: number)=><a key={n} href={["#home","#services","#work","#process","#pricing"][i]} onClick={()=>setOpen(false)} className="hover:text-white">{n}</a>)}
         </nav>
         <div className="flex items-center gap-2">
           <button onClick={()=>setLight(!light)} aria-label={t.theme} className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/5">{light?<Moon size={17}/>:<Sun size={17}/>}</button>
           <button onClick={()=>setLang(lang==="ar"?"en":"ar")} className="rounded-xl border border-white/15 px-3 py-2 text-xs">{t.lang}</button>
-          <a href={link(message)} className="hidden items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-slate-950 md:inline-flex">{t.start}<ArrowUpLeft size={15}/></a>
+          <a href="/start-project" className="hidden items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-slate-950 md:inline-flex">{t.start}<ArrowUpLeft size={15}/></a>
           <button onClick={()=>setOpen(!open)} aria-label="Menu" className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 md:hidden">{open?<X size={18}/>:<Menu size={18}/>}</button>
         </div>
       </header>
@@ -70,7 +74,7 @@ export default function Home() {
           <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs text-white/65"><span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_14px_#6ee7b7]"/>{t.tag}</div>
           <h1 className="text-5xl font-semibold leading-[1.3] tracking-tight sm:text-6xl">{t.title}<br/><span className="bg-gradient-to-r from-white via-violet-200 to-teal-200 bg-clip-text text-transparent">{t.accent}</span></h1>
           <p className="mt-7 max-w-xl text-base leading-9 text-white/55">{t.intro}</p>
-          <div className="mt-9 flex flex-wrap gap-3"><a href={link(message)} className="inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 text-sm font-bold text-slate-950">{t.start}<ArrowUpLeft size={18}/></a><a href="#work" className="inline-flex items-center gap-3 rounded-full border border-white/15 px-7 py-4 text-sm text-white/80">{t.explore}<ArrowDownLeft size={17}/></a></div>
+          <div className="mt-9 flex flex-wrap gap-3"><a href="/start-project" className="inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 text-sm font-bold text-slate-950">{t.start}<ArrowUpLeft size={18}/></a><a href="#work" className="inline-flex items-center gap-3 rounded-full border border-white/15 px-7 py-4 text-sm text-white/80">{t.explore}<ArrowDownLeft size={17}/></a></div>
           <p className="mt-14 border-t border-white/10 pt-6 text-xs tracking-widest text-white/35">STRATEGY&nbsp; • &nbsp;DESIGN&nbsp; • &nbsp;DEVELOPMENT</p>
         </div>
         <div className="relative mx-auto grid aspect-square w-full max-w-[470px] place-items-center">
@@ -85,21 +89,21 @@ export default function Home() {
 
       <section id="services" className="container relative z-10 mx-auto max-w-6xl px-5 py-20">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-5"><div><p className="mb-3 text-xs tracking-[.25em] text-violet-300">WHAT WE DO</p><h2 className="text-3xl font-semibold sm:text-4xl">{t.services}</h2></div><p className="max-w-md text-sm leading-7 text-white/45">{t.serviceIntro}</p></div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{t.serviceNames.map((name,i)=>{const Icon=icons[i];return <article key={name} className="rounded-3xl border border-white/10 bg-white/[.045] p-7 backdrop-blur-xl transition hover:-translate-y-1 hover:border-violet-300/40"><div className="mb-10 flex items-center justify-between"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-violet-300/10 text-violet-200"><Icon size={22}/></span><span className="text-xs text-white/30">0{i+1}</span></div><h3 className="mb-3 text-lg font-semibold">{name}</h3><p className="text-sm leading-7 text-white/50">{t.serviceDesc[i]}</p></article>})}</div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{t.serviceNames.map((name: string,i: number)=>{const Icon=icons[i];return <article key={name} className="rounded-3xl border border-white/10 bg-white/[.045] p-7 backdrop-blur-xl transition hover:-translate-y-1 hover:border-violet-300/40"><div className="mb-10 flex items-center justify-between"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-violet-300/10 text-violet-200"><Icon size={22}/></span><span className="text-xs text-white/30">0{i+1}</span></div><h3 className="mb-3 text-lg font-semibold">{name}</h3><p className="text-sm leading-7 text-white/50">{t.serviceDesc[i]}</p></article>})}</div>
       </section>
 
       <section id="work" className="container relative z-10 mx-auto max-w-6xl px-5 py-20">
         <div className="mb-10 flex flex-wrap items-end justify-between gap-5"><div><p className="mb-3 text-xs tracking-[.25em] text-teal-200">SELECTED CONCEPTS</p><h2 className="text-3xl font-semibold sm:text-4xl">{t.work}</h2></div><p className="max-w-md text-sm leading-7 text-white/40">{t.workNote}</p></div>
-        <div className="grid gap-5 md:grid-cols-3">{t.works.map((name,i)=><article key={name}><div className={"relative mb-4 grid aspect-[4/5] place-items-center overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br "+["from-fuchsia-500/30 via-violet-900/60 to-slate-950","from-cyan-400/25 via-blue-900/60 to-slate-950","from-amber-300/25 via-rose-900/50 to-slate-950"][i]}><div className="absolute inset-5 rounded-[1.5rem] border border-white/15"/><div className="h-40 w-40 rotate-[-12deg] rounded-[2.5rem] border border-white/40 bg-white/10 shadow-2xl backdrop-blur-xl transition duration-500 hover:rotate-6 hover:scale-110"/><span className="absolute right-8 top-8 text-xs text-white/55">0{i+1} / 03</span><span className="absolute bottom-8 left-8 text-[10px] tracking-[.25em] text-white/50">NOVA CONCEPT</span></div><h3 className="text-lg font-semibold">{name}</h3></article>)}</div>
+        <div className="grid gap-5 md:grid-cols-3">{t.works.map((name: string,i: number)=><article key={name}><div className={"relative mb-4 grid aspect-[4/5] place-items-center overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br "+["from-fuchsia-500/30 via-violet-900/60 to-slate-950","from-cyan-400/25 via-blue-900/60 to-slate-950","from-amber-300/25 via-rose-900/50 to-slate-950"][i]}><div className="absolute inset-5 rounded-[1.5rem] border border-white/15"/><div className="h-40 w-40 rotate-[-12deg] rounded-[2.5rem] border border-white/40 bg-white/10 shadow-2xl backdrop-blur-xl transition duration-500 hover:rotate-6 hover:scale-110"/><span className="absolute right-8 top-8 text-xs text-white/55">0{i+1} / 03</span><span className="absolute bottom-8 left-8 text-[10px] tracking-[.25em] text-white/50">NOVA CONCEPT</span></div><h3 className="text-lg font-semibold">{name}</h3></article>)}</div>
       </section>
 
       <section id="process" className="container relative z-10 mx-auto max-w-6xl px-5 py-20">
-        <div className="grid gap-10 rounded-[2rem] border border-white/10 bg-white/[.045] p-7 backdrop-blur-xl md:grid-cols-2 md:p-12"><div><p className="mb-3 text-xs tracking-[.25em] text-violet-300">OUR PROCESS</p><h2 className="text-3xl font-semibold leading-relaxed sm:text-4xl">{t.process}</h2><p className="mt-5 max-w-sm text-sm leading-8 text-white/45">{lang==="ar"?"نبدأ بتواصل واضح ونكمل بتنفيذ منظم واهتمام بكل تفصيلة.":"We start with clear communication and follow through with thoughtful execution."}</p></div><div className="space-y-5">{t.steps.map(([num,title,desc])=><div key={num} className="flex gap-4 border-b border-white/10 pb-5"><span className="pt-1 text-sm text-violet-300">{num}</span><div className="flex-1"><h3 className="mb-1 font-semibold">{title}</h3><p className="text-sm leading-6 text-white/45">{desc}</p></div><Check size={17} className="mt-1 text-emerald-200"/></div>)}</div></div>
+        <div className="grid gap-10 rounded-[2rem] border border-white/10 bg-white/[.045] p-7 backdrop-blur-xl md:grid-cols-2 md:p-12"><div><p className="mb-3 text-xs tracking-[.25em] text-violet-300">OUR PROCESS</p><h2 className="text-3xl font-semibold leading-relaxed sm:text-4xl">{t.process}</h2><p className="mt-5 max-w-sm text-sm leading-8 text-white/45">{lang==="ar"?"نبدأ بتواصل واضح ونكمل بتنفيذ منظم واهتمام بكل تفصيلة.":"We start with clear communication and follow through with thoughtful execution."}</p></div><div className="space-y-5">{t.steps.map(([num,title,desc]: readonly [string,string,string])=><div key={num} className="flex gap-4 border-b border-white/10 pb-5"><span className="pt-1 text-sm text-violet-300">{num}</span><div className="flex-1"><h3 className="mb-1 font-semibold">{title}</h3><p className="text-sm leading-6 text-white/45">{desc}</p></div><Check size={17} className="mt-1 text-emerald-200"/></div>)}</div></div>
       </section>
 
       <section id="pricing" className="container relative z-10 mx-auto max-w-6xl px-5 py-20">
         <div className="mb-10 text-center"><p className="mb-3 text-xs tracking-[.25em] text-teal-200">FLEXIBLE PACKAGES</p><h2 className="text-3xl font-semibold sm:text-4xl">{t.pricing}</h2><p className="mt-4 text-sm text-white/45">{t.pricingNote}</p></div>
-        <div className="grid gap-4 lg:grid-cols-3">{t.plans.map(([name,desc,items],i)=><article key={name} className={"flex flex-col rounded-3xl p-7 "+(i===1?"border border-violet-300/40 bg-violet-300/[.08]":"border border-white/10 bg-white/[.04]")}><div className="text-sm text-white/50">{name}</div><h3 className="mt-5 min-h-16 text-xl font-semibold leading-8">{desc}</h3><div className="my-6 h-px bg-white/10"/><ul className="mb-8 space-y-4 text-sm text-white/65">{items.map(item=><li key={item} className="flex gap-3"><Check size={17} className="text-emerald-200"/>{item}</li>)}</ul><a href={link((lang==="ar"?"مرحبًا، أريد تفاصيل باقة ":"Hello, I'd like details about the ")+name)} className="mt-auto flex items-center justify-center gap-2 rounded-full border border-white/20 px-5 py-3 text-sm transition hover:bg-white hover:text-slate-950">{lang==="ar"?"اطلب عرض سعر":"Request a quote"}<ArrowUpLeft size={16}/></a></article>)}</div>
+        <div className="grid gap-4 lg:grid-cols-3">{t.plans.map(([name,desc,items]: readonly [string,string,readonly string[]],i: number)=><article key={name} className={"flex flex-col rounded-3xl p-7 "+(i===1?"border border-violet-300/40 bg-violet-300/[.08]":"border border-white/10 bg-white/[.04]")}><div className="text-sm text-white/50">{name}</div><h3 className="mt-5 min-h-16 text-xl font-semibold leading-8">{desc}</h3><div className="my-6 h-px bg-white/10"/><ul className="mb-8 space-y-4 text-sm text-white/65">{items.map((item: string)=><li key={item} className="flex gap-3"><Check size={17} className="text-emerald-200"/>{item}</li>)}</ul><a href={link((lang==="ar"?"مرحبًا، أريد تفاصيل باقة ":"Hello, I'd like details about the ")+name)} className="mt-auto flex items-center justify-center gap-2 rounded-full border border-white/20 px-5 py-3 text-sm transition hover:bg-white hover:text-slate-950">{lang==="ar"?"اطلب عرض سعر":"Request a quote"}<ArrowUpLeft size={16}/></a></article>)}</div>
       </section>
 
       <section className="container relative z-10 mx-auto max-w-6xl px-5 py-20">
@@ -108,6 +112,7 @@ export default function Home() {
 
       <footer className="container relative z-10 mx-auto flex max-w-6xl flex-col justify-between gap-4 border-t border-white/10 px-5 py-8 text-xs text-white/40 sm:flex-row"><span className="font-bold tracking-[.2em] text-white/70">NOVA.</span><span>{t.footer}</span><a href="#home">{lang==="ar"?"العودة للأعلى ↑":"Back to top ↑"}</a></footer>
       <a href={link(message)} aria-label="WhatsApp" className="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-2xl border border-white/30 bg-emerald-300 text-emerald-950 shadow-xl shadow-emerald-500/20 transition hover:-translate-y-1"><MessageCircle size={24}/></a>
+    <ChatbotWidget locale={lang} />
     </main>
   );
 }

@@ -30,3 +30,20 @@ Open http://localhost:3000.
 - WhatsApp contact is configured to the business number supplied in the project brief.
 - Authentication, database, client portal, project-request workflow, admin dashboard, email, file storage, and chatbot are not connected yet. They require backend services, credentials, and security configuration before production use.
 - Set the production domain and environment variables before launch.
+
+
+## Platform foundation in progress
+
+The `feature/complete-platform` branch contains the authentication foundation, email verification flow, customer portal, six-stage project request wizard, protected admin overview, customer/project listings, project status API, contact endpoint, and FAQ-based assistant endpoint.
+
+## Required external configuration before acceptance
+
+- Managed PostgreSQL: set `DATABASE_URL` and apply the Prisma schema.
+- Auth: set a unique `AUTH_SECRET` and `AUTH_URL`.
+- Email: configure SMTP before enabling registration and password recovery.
+- OAuth: configure provider credentials if social sign-in is required.
+- AI assistant: configure `OPENAI_API_KEY` and `OPENAI_MODEL`; otherwise only the deterministic FAQ assistant is active.
+- File uploads: configure private object storage before enabling attachments.
+- Create the first administrator using environment variables and `npm run admin:create`. Never commit those values.
+
+This branch is not approved for production. The remaining admin content/settings management, file storage, payment provider, email templates, complete messaging/support workflows, automated tests, accessibility review, and production secrets/database setup must be completed and verified before release.
