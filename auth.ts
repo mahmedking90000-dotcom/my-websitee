@@ -5,7 +5,7 @@ import Facebook from "next-auth/providers/facebook";
 import Twitter from "next-auth/providers/twitter";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";\nimport { UserRole } from "@prisma/client";
 
 const providers: NextAuthConfig["providers"] = [
   Credentials({
@@ -62,7 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         if (token.sub) session.user.id = token.sub;
-        session.user.role = token.role ?? "CLIENT";
+        session.user.role = Object.values(UserRole).includes(token.role as UserRole) ? token.role as UserRole : UserRole.CLIENT;
       }
       return session;
     }
