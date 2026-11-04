@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ThemeProvider from "@/components/theme-provider";
 import AmbientControl from "@/components/ambient-control";
+import InteractionSounds from "@/components/interaction-sounds";
 
 export const metadata: Metadata = {
   title: "NOVA — Digital Experiences",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </div>
           <div className="nova-app-content">{children}</div>
           <AmbientControl />
+          <InteractionSounds />
         </ThemeProvider>
       </body>
     </html>
