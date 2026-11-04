@@ -1,3 +1,3 @@
-import {prisma} from "@/lib/prisma";
-export const dynamic = "force-dynamic";
-export default async function Settings(){const items=await prisma.siteSetting.findMany({orderBy:{key:"asc"}});return <><h1 className="text-3xl font-bold">إعدادات الموقع</h1><p className="mt-2 text-white/50">إعدادات محفوظة في قاعدة البيانات. أضف القيم من واجهة الإدارة بعد استكمال نموذج الإعدادات.</p><div className="mt-6 space-y-3">{items.map(x=><div key={x.id} className="rounded-xl border border-white/10 bg-white/5 p-4"><b>{x.key}</b><pre className="mt-2 overflow-auto text-xs text-white/50">{JSON.stringify(x.value)}</pre></div>)}{!items.length&&<p className="text-white/50">لا توجد إعدادات محفوظة بعد.</p>}</div></>}
+import {prisma} from "@/lib/prisma";import SettingsManager from "@/components/admin-settings-manager";
+export const dynamic="force-dynamic";
+export default async function Settings(){const items=await prisma.siteSetting.findMany({orderBy:{key:"asc"}});return <><h1 className="mb-6 text-3xl font-bold">إعدادات الموقع</h1><SettingsManager initial={items.map(x=>({key:x.key,value:x.value}))}/></>}
