@@ -440,3 +440,17 @@ html[data-theme="light"] .nova-auth-notice { color: #166534; background: rgba(34
 
 /* Let the global ambient layer show through the app shell while body supplies the base color. */
 .site-shell { background-color: transparent !important; }
+
+
+/* Admin and portal navigation surfaces stay readable in light appearance. */
+html[data-theme="light"] .site-shell header[class*="bg-[#090d18]"] {
+  color: #171a2b !important;
+  background: rgba(255,255,255,.9) !important;
+  border-color: rgba(32,43,69,.14) !important;
+  box-shadow: 0 10px 30px rgba(35,29,65,.06);
+}
+html[data-theme="light"] .site-shell aside[class*="bg-[#0a0e19]"] {
+  color: #171a2b !important;
+  background: rgba(255,255,255,.86) !important;
+  border-color: rgba(32,43,69,.14) !important;
+}
