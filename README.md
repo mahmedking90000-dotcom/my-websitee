@@ -10,6 +10,7 @@ A responsive Arabic/English digital agency website built with Next.js, TypeScrip
 - Services, concept portfolio, process, and package sections
 - WhatsApp contact links
 - Metadata, robots rules, and a custom 404 page
+- Initial PostgreSQL data model for users, projects, client files, messages, invoices, services, portfolio, notifications, roles, and audit logs
 - GitHub Actions build workflow
 
 ## Run locally
