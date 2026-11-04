@@ -1,9 +1,9 @@
 name: CI
 on:
   push:
-    branches: [main, feature/complete-platform]
+    branches: [main, feature/complete-platform, feat/nova-ios-interaction-sounds, fix/nova-launch-audit]
   pull_request:
-    branches: [main]
+    branches: [main, feat/nova-ios-interaction-sounds]
 permissions:
   contents: read
 jobs:
@@ -14,11 +14,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
       - name: Validate Prisma schema
         run: npx prisma validate
         env:
           DATABASE_URL: postgresql://ci:ci@localhost:5432/nova
+      - name: Lint
+        run: npm run lint
       - name: Build application
         run: npm run build
         env:
