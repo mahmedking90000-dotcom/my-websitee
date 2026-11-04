@@ -66,7 +66,7 @@ function savePreference(key: string, value: string) {
 }
 
 export default function Home() {
-  const lang = useSyncExternalStore(subscribePreferences, readStoredLanguage, () => "ar");
+  const lang: "ar" | "en" = useSyncExternalStore(subscribePreferences, readStoredLanguage, () => "ar");
   const light = useSyncExternalStore(subscribePreferences, readStoredTheme, () => false);
   const [open, setOpen] = useState(false);
   const direction = lang === "ar" ? "rtl" : "ltr";
