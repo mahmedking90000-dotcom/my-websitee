@@ -15,11 +15,16 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     const initial: Theme = stored === "light" || stored === "dark"
       ? stored
       : window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+
+    if (!stored) localStorage.setItem("nova-theme", initial);
     applyTheme(initial);
+    // Keep the home-page external-store subscriber in sync with the same theme source.
+    window.dispatchEvent(new Event("nova-preferences-change"));
 
     const syncTheme = (event: StorageEvent) => {
       if (event.key === "nova-theme" && (event.newValue === "light" || event.newValue === "dark")) {
         applyTheme(event.newValue);
+        window.dispatchEvent(new Event("nova-preferences-change"));
       }
     };
     window.addEventListener("storage", syncTheme);
