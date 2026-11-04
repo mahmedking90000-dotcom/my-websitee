@@ -6,6 +6,7 @@ import Twitter from "next-auth/providers/twitter";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { createHash } from "node:crypto";
 import { UserRole } from "@prisma/client";
 
 const providers: NextAuthConfig["providers"] = [
@@ -48,13 +49,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.sub) {
         const currentUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { role: true, name: true, email: true }
+          select: { role: true, name: true, email: true, passwordHash: true }
         });
         if (currentUser) {
+          const passwordVersion = currentUser.passwordHash
+            ? createHash("sha256").update(currentUser.passwordHash).digest("hex")
+            : null;
+
+          // JWT sessions are stateless. A password-hash fingerprint lets us
+          // revoke existing tokens on the next request after a password reset.
+          if (token.passwordVersion !== undefined && token.passwordVersion !== passwordVersion) {
+            delete token.sub;
+            delete token.name;
+            delete token.email;
+            delete token.passwordVersion;
+            token.role = "CLIENT";
+            return token;
+          }
+
+          token.passwordVersion = passwordVersion;
           token.role = currentUser.role;
           token.name = currentUser.name ?? token.name;
           token.email = currentUser.email;
         } else {
+          delete token.sub;
+          delete token.passwordVersion;
           token.role = "CLIENT";
         }
       }
