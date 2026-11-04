@@ -66,7 +66,7 @@ button { font: inherit; }
 }
 
 html[data-theme="light"] body { background:#f4f6fb !important; color:#171a2b !important; }
-html[data-theme="light"] .bg-\\[\\#080b14\\] { background:#f4f6fb !important; }
+html[data-theme="light"] [class*="080b14"] { background:#f4f6fb !important; }
 html[data-theme="light"] [class*="text-white"] { color:#30364a !important; }
 html[data-theme="light"] [class*="bg-white/"] { background-color:rgba(255,255,255,.78) !important; }
 html[data-theme="light"] [class*="border-white/"] { border-color:rgba(32,43,69,.14) !important; }
