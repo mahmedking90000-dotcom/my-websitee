@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ArrowUpLeft, ArrowDownLeft, Sparkles, Code2, ShoppingBag, Palette, Layers3, Zap, Menu, X, Sun, Moon, MessageCircle, Check } from "lucide-react";
 
 const wa = "https://wa.me/201116013702";
-const content = {
+const content: Record<"ar" | "en", any> = {
   ar: {
     nav: ["الرئيسية", "خدماتنا", "أعمالنا", "طريقة العمل", "الباقات"],
     lang: "English", start: "ابدأ مشروعك", tag: "شريكك الإبداعي في العالم الرقمي",
