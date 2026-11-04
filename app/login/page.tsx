@@ -3,6 +3,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { ArrowUpRight, LockKeyhole, Sparkles } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,8 +25,14 @@ export default function Login() {
     setNotice("");
     setLoading(true);
     try {
-      const callbackUrl = new URLSearchParams(window.location.search).get("callbackUrl") || "/portal";
-      const result = await signIn("credentials", { email, password, redirect: false, redirectTo: callbackUrl });
+      const requested = new URLSearchParams(window.location.search).get("callbackUrl");
+      const callbackUrl = requested?.startsWith("/") && !requested.startsWith("//") ? requested : "/portal";
+      const result = await signIn("credentials", {
+        email: email.trim().toLowerCase(),
+        password,
+        redirect: false,
+        redirectTo: callbackUrl
+      });
       if (result?.error) setError("بيانات الدخول غير صحيحة أو البريد لم يتم تأكيده.");
       else window.location.assign(callbackUrl);
     } catch {
@@ -36,27 +43,44 @@ export default function Login() {
   }
 
   return (
-    <main dir="rtl" className="site-shell grid min-h-screen place-items-center bg-[#080b14] p-5 text-white">
-      <form onSubmit={submit} className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.06] p-8">
-        <Link href="/" className="font-bold tracking-widest">NOVA.</Link>
-        <h1 className="mt-8 text-3xl font-bold">تسجيل الدخول</h1>
-        {notice && <p role="status" className="mt-4 rounded-xl bg-emerald-400/10 p-3 text-sm text-emerald-200">{notice}</p>}
-        <label className="mt-7 block text-sm">البريد الإلكتروني
-          <input required type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 p-3" />
-        </label>
-        <label className="mt-4 block text-sm">كلمة المرور
-          <input required type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 p-3" />
-        </label>
-        {error && <p role="alert" className="mt-4 text-sm text-rose-300">{error}</p>}
-        <button disabled={loading} className="mt-6 w-full rounded-xl bg-white p-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60">
-          {loading ? "جارٍ تسجيل الدخول..." : "دخول"}
-        </button>
-        <div className="mt-5 flex flex-wrap justify-between gap-3 text-sm text-white/60">
-          <Link href="/register">إنشاء حساب</Link>
+    <main dir="rtl" className="nova-auth-page">
+      <div className="nova-auth-card">
+        <Link href="/" className="nova-auth-brand" aria-label="NOVA — الصفحة الرئيسية">
+          <span className="nova-auth-brand-mark"><Sparkles size={20} /></span>
+          <span>NOVA<span className="nova-auth-brand-dot">.</span></span>
+        </Link>
+
+        <div className="nova-auth-heading">
+          <span className="nova-auth-eyebrow"><LockKeyhole size={14} /> مساحة آمنة</span>
+          <h1>تسجيل الدخول</h1>
+          <p>أهلاً بعودتك. سجّل دخولك لمتابعة مشاريعك ومساحتك الخاصة.</p>
+        </div>
+
+        {notice && <p role="status" className="nova-auth-notice">{notice}</p>}
+
+        <form onSubmit={submit} className="nova-auth-form">
+          <label>
+            <span>البريد الإلكتروني</span>
+            <input required type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="name@example.com" />
+          </label>
+          <label>
+            <span>كلمة المرور</span>
+            <input required type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} placeholder="أدخل كلمة المرور" />
+          </label>
+          {error && <p role="alert" className="nova-auth-error">{error}</p>}
+          <button disabled={loading} type="submit" className="nova-auth-submit">
+            {loading ? "جارٍ تسجيل الدخول..." : "دخول إلى حسابك"}
+            {!loading && <ArrowUpRight size={18} />}
+          </button>
+        </form>
+
+        <div className="nova-auth-links">
+          <Link href="/register">إنشاء حساب جديد</Link>
           <Link href="/forgot-password">نسيت كلمة المرور؟</Link>
         </div>
-        <p className="mt-4 text-sm text-white/60">لم تؤكد بريدك؟ <Link href="/verify-email" className="underline underline-offset-4">إعادة إرسال رابط التأكيد</Link></p>
-      </form>
+        <p className="nova-auth-verify">لم تؤكد بريدك؟ <Link href="/verify-email">إعادة إرسال رابط التأكيد</Link></p>
+        <Link href="/" className="nova-auth-back">العودة إلى الموقع الرئيسي</Link>
+      </div>
     </main>
   );
 }
