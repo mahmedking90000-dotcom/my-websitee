@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ChatbotWidget from "@/components/chatbot-widget";
 import { ArrowUpLeft, ArrowDownLeft, Sparkles, Code2, ShoppingBag, Palette, Layers3, Zap, Menu, X, Sun, Moon, MessageCircle, Check } from "lucide-react";
 
@@ -45,6 +45,9 @@ export default function Home() {
   const [lang, setLang] = useState<"ar" | "en">("ar");
   const [light, setLight] = useState(false);
   const [open, setOpen] = useState(false);
+  useEffect(() => { const savedTheme = localStorage.getItem("nova-theme"); if (savedTheme) setLight(savedTheme === "light"); const savedLang = localStorage.getItem("nova-lang"); if (savedLang === "ar" || savedLang === "en") setLang(savedLang); }, []);
+  useEffect(() => { localStorage.setItem("nova-theme", light ? "light" : "dark"); }, [light]);
+  useEffect(() => { localStorage.setItem("nova-lang", lang); }, [lang]);
   const t = content[lang];
   const direction = lang === "ar" ? "rtl" : "ltr";
   const link = (message: string) => wa + "?text=" + encodeURIComponent(message);
