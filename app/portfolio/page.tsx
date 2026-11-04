@@ -41,7 +41,8 @@ export default async function Portfolio() {
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {items.map(project => {
               const title = arabicText(project.title) || project.slug;
-              const summary = arabicText(project.summary);\n              const coverImage = project.coverImageKey && /^https?:\\/\\//i.test(project.coverImageKey) ? project.coverImageKey : null;
+              const summary = arabicText(project.summary);
+              const coverImage = project.coverImageKey && /^https?:\/\//i.test(project.coverImageKey) ? project.coverImageKey : null;
               const video = project.galleryKeys.find(value => value.startsWith("video:"))?.slice(6);
               return (
                 <article key={project.id} className="overflow-hidden rounded-3xl border border-white/10 bg-white/[.045]">
@@ -51,7 +52,7 @@ export default async function Portfolio() {
                         <source src={video} type="video/mp4" />
                         متصفحك لا يدعم تشغيل الفيديو.
                       </video>
-                    ) : project.coverImageKey ? (
+                    ) : coverImage ? (
                       <div role="img" aria-label={title} style={{ backgroundImage: `url("${coverImage}")` }} className="h-full w-full bg-cover bg-center transition duration-500 hover:scale-105" />
                     ) : (
                       <div className="grid h-full place-items-center bg-gradient-to-br from-violet-500/30 to-cyan-500/20 text-5xl">✦</div>
