@@ -454,3 +454,17 @@ html[data-theme="light"] .site-shell aside[class*="bg-[#0a0e19]"] {
   background: rgba(255,255,255,.86) !important;
   border-color: rgba(32,43,69,.14) !important;
 }
+
+
+/* Light-mode contrast overrides for the metallic hero title and scene labels. */
+html[data-theme="light"] .nova-title-metal {
+  background: linear-gradient(110deg, #292342 3%, #57458d 25%, #30274e 46%, #63518f 68%, #27213f 90%);
+  color: transparent;
+  filter: drop-shadow(0 8px 24px rgba(69, 51, 112, .12));
+}
+html[data-theme="light"] .nova-scene-caption {
+  color: rgba(47, 40, 73, .62);
+}
+html[data-theme="light"] .nova-scene-index {
+  color: rgba(47, 40, 73, .68);
+}
