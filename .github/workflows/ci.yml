@@ -34,15 +34,7 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Save generated npm lockfile
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: npm-package-lock-${{ github.sha }}
-          path: package-lock.json
-          if-no-files-found: error
-          retention-days: 1
+        run: npm ci --no-audit --no-fund
 
       - name: Validate Prisma schema
         run: npx prisma validate
@@ -59,35 +51,3 @@ jobs:
           AUTH_SECRET: ci-only-secret-not-for-production
           AUTH_URL: http://localhost:3000
           NEXT_TELEMETRY_DISABLED: "1"
-
-  commit-lockfile:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/fix/nova-launch-audit'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout trusted repository branch
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: fix/nova-launch-audit
-          persist-credentials: true
-
-      - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 22
-
-      - name: Generate lockfile without running package scripts
-        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
-
-      - name: Commit lockfile if changed
-        run: |
-          git add -- package-lock.json
-          if git diff --cached --quiet; then
-            echo "package-lock.json is already current."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "chore: add npm lockfile"
-          git push origin HEAD:fix/nova-launch-audit
