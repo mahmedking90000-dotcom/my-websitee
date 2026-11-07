@@ -15,7 +15,7 @@ export default function ResetPassword() {
     /[a-z]/.test(password) &&
     /[A-Z]/.test(password) &&
     /[0-9]/.test(password) &&
-    /[^A-Za-z0-9\\s]/.test(password);
+    /[\p{P}\p{S}]/u.test(password);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
