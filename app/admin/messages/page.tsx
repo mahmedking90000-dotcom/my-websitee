@@ -29,7 +29,7 @@ export default async function Messages() {
         select: { projectId: true, senderId: true }
       })
     : [];
-  const ownerByProject = new Map(projects.map(project => [project.id, project.owner.id]));
+  const ownerByProject = new Map<string, string>(projects.map(project => [project.id, project.owner.id] as const));
   const unreadByProject = new Map<string, number>();
   for (const message of unreadRows) {
     if (ownerByProject.get(message.projectId) === message.senderId) {
