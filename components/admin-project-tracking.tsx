@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Clock3, Save } from "lucide-react";
 
@@ -59,6 +59,15 @@ export default function AdminProjectTracking({ initialProjects }: { initialProje
   );
   const [savingId, setSavingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Record<string, { ok: boolean; text: string }>>({});
+
+  useEffect(() => {
+    setProjects(initialProjects);
+    setForm(Object.fromEntries(initialProjects.map(project => [project.id, {
+      status: project.status,
+      title: "",
+      body: ""
+    }])));
+  }, [initialProjects]);
 
   function updateForm(id: string, patch: Partial<{ status: Status; title: string; body: string }>) {
     setForm(current => ({ ...current, [id]: { ...current[id], ...patch } }));
