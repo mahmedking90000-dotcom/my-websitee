@@ -468,3 +468,20 @@ html[data-theme="light"] .nova-scene-caption {
 html[data-theme="light"] .nova-scene-index {
   color: rgba(47, 40, 73, .68);
 }
+
+/* Explicit native select and option colors for readable project-type menus. */
+.site-shell select {
+  color: #f5f7fb !important;
+  background-color: #171b2a !important;
+}
+.site-shell select option,
+.site-shell select optgroup {
+  color: #f5f7fb !important;
+  background-color: #171b2a !important;
+}
+html[data-theme="light"] .site-shell select,
+html[data-theme="light"] .site-shell select option,
+html[data-theme="light"] .site-shell select optgroup {
+  color: #171a2b !important;
+  background-color: #ffffff !important;
+}
