@@ -16,7 +16,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "خدمة البريد غير متاحة مؤقتًا. حاول لاحقًا." }, { status: 503 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email: email.trim().toLowerCase() } });
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email.trim().toLowerCase(), mode: "insensitive" } }
+    });
     if (!user) {
       return NextResponse.json({ message: "إذا كان البريد مسجلًا فستصلك رسالة الاستعادة." });
     }
