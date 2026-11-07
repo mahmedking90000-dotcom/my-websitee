@@ -23,4 +23,4 @@ The application can be built without optional third-party services, but the foll
 - Review public API traffic and stage generous Vercel Firewall rate limits in log-only mode first. Review matched requests before enforcing a block or throttle.
 - Require the repository CI check on the production branch and protect direct pushes before the first public release.
 - Test registration, verification, password reset, contact inbox, chat, portal, admin, and private file uploads against a working Preview deployment before production promotion.
-- Generate and commit `package-lock.json`, then switch CI and Vercel installation to `npm ci` so transitive dependency versions remain reproducible.
+- **Dependency lockfile:** `package-lock.json` is now committed. GitHub Actions runs `npm ci` against it, and the lockfile is versioned with the project.
