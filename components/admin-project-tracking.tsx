@@ -129,6 +129,8 @@ export default function AdminProjectTracking({ initialProjects }: { initialProje
         const expanded = openId === project.id;
         const values = form[project.id] ?? { status: project.status, title: "", body: "" };
         const statusLabel = statusOptions.find(option => option.value === project.status)?.label ?? project.status;
+        const progressOptions = statusOptions.filter(option => option.value !== "CANCELLED");
+        const currentProgressIndex = progressOptions.findIndex(option => option.value === values.status);
         return (
           <article key={project.id} className="overflow-hidden rounded-2xl border border-white/10 bg-white/[.035]">
             <button
@@ -151,6 +153,25 @@ export default function AdminProjectTracking({ initialProjects }: { initialProje
 
             {expanded && (
               <div className="border-t border-white/10 p-4 sm:p-5">
+                <div className="mb-5 rounded-xl border border-violet-300/15 bg-violet-300/[.04] p-4">
+                  <h4 className="mb-3 text-sm font-bold text-violet-100">مسار متابعة المشروع</h4>
+                  {values.status === "CANCELLED" ? (
+                    <p className="text-sm text-rose-200">تم إلغاء المشروع.</p>
+                  ) : (
+                    <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {progressOptions.map((step, index) => {
+                        const complete = currentProgressIndex >= 0 && index < currentProgressIndex;
+                        const active = index === currentProgressIndex;
+                        return (
+                          <li key={step.value} className="flex items-center gap-2">
+                            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${complete ? "bg-teal-300" : active ? "bg-violet-200 ring-4 ring-violet-300/15" : "bg-white/20"}`} />
+                            <span className={`text-xs ${active ? "font-bold text-violet-100" : complete ? "text-teal-100/80" : "text-white/40"}`}>{step.label}</span>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  )}
+                </div>
                 <div className="grid gap-4 lg:grid-cols-2">
                   <label className="block text-sm font-semibold text-white/75">
                     حالة المشروع الحالية
