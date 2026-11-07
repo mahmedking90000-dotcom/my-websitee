@@ -8,11 +8,14 @@ import { ArrowUpRight, LockKeyhole, Sparkles } from "lucide-react";
 
 function LoginContent() {
   const searchParams = useSearchParams();
+  const registered = searchParams.get("registered") === "success";
   const verification = searchParams.get("verify");
-  const verificationNotice = verification === "success" ? "تم تأكيد بريدك الإلكتروني بنجاح. يمكنك تسجيل الدخول الآن." : "";
-  const verificationError = verification === "expired"
-    ? "رابط التأكيد غير صالح أو انتهت صلاحيته. اطلب كودًا جديدًا."
-    : verification === "invalid" ? "بيانات التأكيد غير مكتملة. اطلب كودًا جديدًا." : "";
+  const verificationNotice = registered
+    ? "تم إنشاء حسابك بنجاح. أدخل بريدك وكلمة المرور لتسجيل الدخول."
+    : verification === "success" ? "يمكنك تسجيل الدخول إلى حسابك الآن." : "";
+  const verificationError = verification === "expired" || verification === "invalid"
+    ? "تأكيد البريد غير مفعّل حاليًا. يمكنك تسجيل الدخول مباشرة."
+    : "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +37,7 @@ function LoginContent() {
         redirect: false,
         redirectTo: callbackUrl
       });
-      if (result?.error) setError("بيانات الدخول غير صحيحة أو البريد لم يتم تأكيده.");
+      if (result?.error) setError("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
       else window.location.assign(callbackUrl);
     } catch {
       setError("تعذر تسجيل الدخول حاليًا. حاول مرة أخرى.");
@@ -75,7 +78,7 @@ function LoginContent() {
           <Link href="/register">إنشاء حساب جديد</Link>
           <Link href="/forgot-password">نسيت كلمة المرور؟</Link>
         </div>
-        <p className="nova-auth-verify">لم تؤكد بريدك؟ <Link href="/verify-email">إدخال كود التأكيد أو إعادة إرساله</Link></p>
+        <p className="nova-auth-verify">تأكيد البريد الإلكتروني: <Link href="/verify-email">غير مفعّل حاليًا</Link></p>
         <Link href="/" className="nova-auth-back">العودة إلى الموقع الرئيسي</Link>
       </div>
     </main>
