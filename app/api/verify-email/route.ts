@@ -1,1 +1,12 @@
-import {NextResponse} from "next/server";import {createHash} from "node:crypto";import {prisma} from "@/lib/prisma";export async function GET(req:Request){const u=new URL(req.url),t=u.searchParams.get("token");if(!t)return NextResponse.redirect(new URL("/login?verify=invalid",u));const tokenHash=createHash("sha256").update(t).digest("hex"),row=await prisma.emailVerificationToken.findUnique({where:{tokenHash}});if(!row||row.usedAt||row.expiresAt<new Date())return NextResponse.redirect(new URL("/login?verify=expired",u));await prisma.$transaction([prisma.user.update({where:{id:row.userId},data:{emailVerified:new Date()}}),prisma.emailVerificationToken.update({where:{id:row.id},data:{usedAt:new Date()}})]);return NextResponse.redirect(new URL("/login?verify=success",u));}
+import { NextResponse } from "next/server";
+
+export async function GET(request: Request) {
+  return NextResponse.redirect(new URL("/verify-email", request.url));
+}
+
+export async function POST() {
+  return NextResponse.json(
+    { error: "تأكيد البريد الإلكتروني متوقف حاليًا. يمكنك تسجيل الدخول مباشرة." },
+    { status: 410 }
+  );
+}

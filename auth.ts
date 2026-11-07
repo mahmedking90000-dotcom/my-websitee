@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import Facebook from "next-auth/providers/facebook";
@@ -6,8 +6,10 @@ import Twitter from "next-auth/providers/twitter";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { createHash } from "node:crypto";
+import { UserRole } from "@prisma/client";
 
-const providers: any[] = [
+const providers: NextAuthConfig["providers"] = [
   Credentials({
     credentials: {
       email: { type: "email" },
@@ -16,10 +18,13 @@ const providers: any[] = [
     async authorize(credentials) {
       if (typeof credentials?.email !== "string" || typeof credentials?.password !== "string") return null;
       const email = credentials.email.trim().toLowerCase();
-      const user = await prisma.user.findUnique({ where: { email } });
-      if (!user?.passwordHash || !user.emailVerified) return null;
+      const user = await prisma.user.findFirst({
+        where: { email: { equals: email, mode: "insensitive" } }
+      });
+      // Email confirmation is temporarily inactive; a valid password is enough to sign in.
+      if (!user?.passwordHash) return null;
       if (!(await compare(credentials.password, user.passwordHash))) return null;
-      return { id: user.id, name: user.name, email: user.email, role: user.role } as any;
+      return { id: user.id, name: user.name, email: user.email, role: user.role };
     }
   })
 ];
@@ -47,22 +52,40 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.sub) {
         const currentUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { role: true, name: true, email: true }
+          select: { role: true, name: true, email: true, passwordHash: true }
         });
         if (currentUser) {
-          (token as any).role = currentUser.role;
+          const passwordVersion = currentUser.passwordHash
+            ? createHash("sha256").update(currentUser.passwordHash).digest("hex")
+            : null;
+
+          // JWT sessions are stateless. A password-hash fingerprint lets us
+          // revoke existing tokens on the next request after a password reset.
+          if (token.passwordVersion !== undefined && token.passwordVersion !== passwordVersion) {
+            delete token.sub;
+            delete token.name;
+            delete token.email;
+            delete token.passwordVersion;
+            token.role = "CLIENT";
+            return token;
+          }
+
+          token.passwordVersion = passwordVersion;
+          token.role = currentUser.role;
           token.name = currentUser.name ?? token.name;
           token.email = currentUser.email;
         } else {
-          (token as any).role = "CLIENT";
+          delete token.sub;
+          delete token.passwordVersion;
+          token.role = "CLIENT";
         }
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.sub;
-        (session.user as any).role = (token as any).role ?? "CLIENT";
+        if (token.sub) session.user.id = token.sub;
+        session.user.role = Object.values(UserRole).includes(token.role as UserRole) ? token.role as UserRole : UserRole.CLIENT;
       }
       return session;
     }

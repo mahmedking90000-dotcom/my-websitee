@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import ChatbotWidget from "@/components/chatbot-widget";
 import Nova3DHero from "@/components/nova-3d-hero";
-import { ArrowUpLeft, ArrowDownLeft, Sparkles, Code2, ShoppingBag, Palette, Layers3, Zap, Menu, X, Sun, Moon, MessageCircle, Check } from "lucide-react";
+import { ArrowUpLeft, Sparkles, Code2, ShoppingBag, Palette, Layers3, Zap, Menu, X, Sun, Moon, MessageCircle, Check } from "lucide-react";
 
 const wa = "https://wa.me/201116013702";
 const content = {
@@ -42,15 +42,42 @@ const content = {
 } as const;
 const icons = [Code2, ShoppingBag, Palette, Layers3, Zap, Sparkles];
 
+function subscribePreferences(callback: () => void) {
+  const notify = () => callback();
+  window.addEventListener("storage", notify);
+  window.addEventListener("nova-preferences-change", notify);
+  return () => {
+    window.removeEventListener("storage", notify);
+    window.removeEventListener("nova-preferences-change", notify);
+  };
+}
+
+function readStoredTheme() {
+  return localStorage.getItem("nova-theme") === "light";
+}
+
+function readStoredLanguage(): "ar" | "en" {
+  return localStorage.getItem("nova-lang") === "en" ? "en" : "ar";
+}
+
+function savePreference(key: string, value: string) {
+  localStorage.setItem(key, value);
+  window.dispatchEvent(new Event("nova-preferences-change"));
+}
+
 export default function Home() {
-  const [lang, setLang] = useState<"ar" | "en">("ar");
-  const [light, setLight] = useState(false);
+  const lang: "ar" | "en" = useSyncExternalStore(subscribePreferences, readStoredLanguage, () => "ar");
+  const light = useSyncExternalStore(subscribePreferences, readStoredTheme, () => false);
   const [open, setOpen] = useState(false);
-  useEffect(() => { const savedTheme = localStorage.getItem("nova-theme"); if (savedTheme) setLight(savedTheme === "light"); const savedLang = localStorage.getItem("nova-lang"); if (savedLang === "ar" || savedLang === "en") setLang(savedLang); }, []);
-  useEffect(() => { const theme = light ? "light" : "dark"; localStorage.setItem("nova-theme", theme); document.documentElement.dataset.theme = theme; document.documentElement.style.colorScheme = theme; }, [light]);
-  useEffect(() => { localStorage.setItem("nova-lang", lang); }, [lang]);
-  const t = content[lang];
   const direction = lang === "ar" ? "rtl" : "ltr";
+  useEffect(() => {
+    const theme = light ? "light" : "dark";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = direction;
+  }, [light, lang, direction]);
+  const t = content[lang];
   const link = (message: string) => wa + "?text=" + encodeURIComponent(message);
   const message = lang === "ar" ? "مرحبًا، أريد الاستفسار عن خدمات NOVA وبدء مشروع." : "Hello, I'd like to ask about NOVA services and start a project.";
 
@@ -63,8 +90,8 @@ export default function Home() {
           {t.nav.map((n: string,i: number)=><a key={n} href={["#home","#services","#work","#process","#pricing"][i]} onClick={()=>setOpen(false)} className="hover:text-white">{n}</a>)}
         </nav>
         <div className="flex items-center gap-2">
-          <button onClick={()=>setLight(!light)} aria-label={t.theme} className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/5">{light?<Moon size={17}/>:<Sun size={17}/>}</button>
-          <button onClick={()=>setLang(lang==="ar"?"en":"ar")} className="rounded-xl border border-white/15 px-3 py-2 text-xs">{t.lang}</button>
+          <button onClick={()=>savePreference("nova-theme", light ? "dark" : "light")} aria-label={t.theme} className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 bg-white/5">{light?<Moon size={17}/>:<Sun size={17}/>}</button>
+          <button onClick={()=>savePreference("nova-lang", lang==="ar" ? "en" : "ar")} className="rounded-xl border border-white/15 px-3 py-2 text-xs">{t.lang}</button>
           <a href="/start-project" className="nova-primary hidden items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-slate-950 md:inline-flex">{t.start}<ArrowUpLeft size={15}/></a>
           <button onClick={()=>setOpen(!open)} aria-label="Menu" className="grid h-9 w-9 place-items-center rounded-xl border border-white/15 md:hidden">{open?<X size={18}/>:<Menu size={18}/>}</button>
         </div>
@@ -92,7 +119,7 @@ export default function Home() {
       </section>
 
       <section className="container relative z-10 mx-auto max-w-6xl px-5 py-20">
-        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[.05] px-6 py-16 text-center backdrop-blur-xl md:px-14"><div className="absolute left-1/2 top-0 h-40 w-96 -translate-x-1/2 rounded-full bg-violet-500/20 blur-[80px]"/><div className="relative"><p className="mb-3 text-xs tracking-[.25em] text-violet-300">LET'S CREATE SOMETHING</p><h2 className="text-3xl font-semibold sm:text-5xl">{t.contact}</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-8 text-white/50">{t.contactText}</p><a href={link(message)} className="nova-primary mt-8 inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 text-sm font-bold text-slate-950"><MessageCircle size={18}/>{t.whatsapp}<ArrowUpLeft size={17}/></a><p className="mt-5 text-xs tracking-widest text-white/35">011 1601 3702</p></div></div>
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[.05] px-6 py-16 text-center backdrop-blur-xl md:px-14"><div className="absolute left-1/2 top-0 h-40 w-96 -translate-x-1/2 rounded-full bg-violet-500/20 blur-[80px]"/><div className="relative"><p className="mb-3 text-xs tracking-[.25em] text-violet-300">LET&apos;S CREATE SOMETHING</p><h2 className="text-3xl font-semibold sm:text-5xl">{t.contact}</h2><p className="mx-auto mt-5 max-w-xl text-sm leading-8 text-white/50">{t.contactText}</p><a href={link(message)} className="nova-primary mt-8 inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 text-sm font-bold text-slate-950"><MessageCircle size={18}/>{t.whatsapp}<ArrowUpLeft size={17}/></a><p className="mt-5 text-xs tracking-widest text-white/35">011 1601 3702</p></div></div>
       </section>
 
       <footer className="container relative z-10 mx-auto flex max-w-6xl flex-col justify-between gap-4 border-t border-white/10 px-5 py-8 text-xs text-white/40 sm:flex-row"><span className="font-bold tracking-[.2em] text-white/70">NOVA.</span><span>{t.footer}</span><a href="#home">{lang==="ar"?"العودة للأعلى ↑":"Back to top ↑"}</a></footer>

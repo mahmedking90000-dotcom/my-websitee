@@ -21,7 +21,7 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
-a { color: inherit; text-decoration: none; }
+a { text-decoration: none; }
 button, input, textarea, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -454,3 +454,71 @@ html[data-theme="light"] .site-shell aside[class*="bg-[#0a0e19]"] {
   background: rgba(255,255,255,.86) !important;
   border-color: rgba(32,43,69,.14) !important;
 }
+
+
+/* Light-mode contrast overrides for the metallic hero title and scene labels. */
+html[data-theme="light"] .nova-title-metal {
+  background: linear-gradient(110deg, #292342 3%, #57458d 25%, #30274e 46%, #63518f 68%, #27213f 90%);
+  color: transparent;
+  filter: drop-shadow(0 8px 24px rgba(69, 51, 112, .12));
+}
+html[data-theme="light"] .nova-scene-caption {
+  color: rgba(47, 40, 73, .62);
+}
+html[data-theme="light"] .nova-scene-index {
+  color: rgba(47, 40, 73, .68);
+}
+
+/* Explicit native select and option colors for readable project-type menus. */
+.site-shell select {
+  color: #f5f7fb !important;
+  background-color: #171b2a !important;
+}
+.site-shell select option,
+.site-shell select optgroup {
+  color: #f5f7fb !important;
+  background-color: #171b2a !important;
+}
+html[data-theme="light"] .site-shell select,
+html[data-theme="light"] .site-shell select option,
+html[data-theme="light"] .site-shell select optgroup {
+  color: #171a2b !important;
+  background-color: #ffffff !important;
+}
+
+
+/* Workspace-level bilingual layout and distinct chat sender colors. */
+.workspace-locale-root { min-height: 100%; }
+.workspace-locale-root[data-workspace-language="en"] .text-right { text-align: left !important; }
+.workspace-locale-root[data-workspace-language="en"] .border-r { border-right: 0 !important; border-left: 1px solid currentColor; }
+.chat-message-bubble { max-width: 88%; }
+.chat-message-own {
+  color: #f6f2ff !important;
+  background: linear-gradient(145deg, rgba(124, 94, 255, .28), rgba(95, 73, 170, .22)) !important;
+  border: 1px solid rgba(190, 170, 255, .34) !important;
+  box-shadow: 0 8px 24px rgba(65, 48, 120, .13);
+}
+.chat-message-other {
+  color: #e6fffb !important;
+  background: linear-gradient(145deg, rgba(13, 148, 136, .22), rgba(15, 118, 110, .16)) !important;
+  border: 1px solid rgba(94, 234, 212, .28) !important;
+  box-shadow: 0 8px 24px rgba(8, 90, 83, .10);
+}
+.chat-message-own .chat-message-meta { color: rgba(235, 225, 255, .66) !important; }
+.chat-message-other .chat-message-meta { color: rgba(204, 251, 241, .68) !important; }
+.chat-message-own .chat-message-body { color: #faf8ff !important; }
+.chat-message-other .chat-message-body { color: #e6fffb !important; }
+html[data-theme="light"] .chat-message-own {
+  color: #35245e !important;
+  background: linear-gradient(145deg, #f0eaff, #e7defe) !important;
+  border-color: rgba(109, 80, 181, .25) !important;
+}
+html[data-theme="light"] .chat-message-other {
+  color: #124a45 !important;
+  background: linear-gradient(145deg, #e5f8f3, #d9f2ed) !important;
+  border-color: rgba(15, 118, 110, .22) !important;
+}
+html[data-theme="light"] .chat-message-own .chat-message-meta { color: #76679b !important; }
+html[data-theme="light"] .chat-message-other .chat-message-meta { color: #477b73 !important; }
+html[data-theme="light"] .chat-message-own .chat-message-body { color: #2f214f !important; }
+html[data-theme="light"] .chat-message-other .chat-message-body { color: #124a45 !important; }

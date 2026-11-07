@@ -1,23 +1,27 @@
 "use client";
 
-import { type FormEvent, useEffect, useState } from "react";
+import { Suspense, type FormEvent, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { ArrowUpRight, LockKeyhole, Sparkles } from "lucide-react";
 
-export default function Login() {
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const registered = searchParams.get("registered") === "success";
+  const verification = searchParams.get("verify");
+  const verificationNotice = registered
+    ? "تم إنشاء حسابك بنجاح. أدخل بريدك وكلمة المرور لتسجيل الدخول."
+    : verification === "success" ? "يمكنك تسجيل الدخول إلى حسابك الآن." : "";
+  const verificationError = verification === "expired" || verification === "invalid"
+    ? "تأكيد البريد غير مفعّل حاليًا. يمكنك تسجيل الدخول مباشرة."
+    : "";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const verify = new URLSearchParams(window.location.search).get("verify");
-    if (verify === "success") setNotice("تم تأكيد بريدك الإلكتروني بنجاح. يمكنك تسجيل الدخول الآن.");
-    if (verify === "expired") setError("رابط التأكيد غير صالح أو انتهت صلاحيته. اطلب رابطًا جديدًا.");
-    if (verify === "invalid") setError("رابط التأكيد غير مكتمل. اطلب رسالة جديدة.");
-  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,7 +29,7 @@ export default function Login() {
     setNotice("");
     setLoading(true);
     try {
-      const requested = new URLSearchParams(window.location.search).get("callbackUrl");
+      const requested = searchParams.get("callbackUrl");
       const callbackUrl = requested?.startsWith("/") && !requested.startsWith("//") ? requested : "/portal";
       const result = await signIn("credentials", {
         email: email.trim().toLowerCase(),
@@ -33,7 +37,7 @@ export default function Login() {
         redirect: false,
         redirectTo: callbackUrl
       });
-      if (result?.error) setError("بيانات الدخول غير صحيحة أو البريد لم يتم تأكيده.");
+      if (result?.error) setError("البريد الإلكتروني أو كلمة المرور غير صحيحة.");
       else window.location.assign(callbackUrl);
     } catch {
       setError("تعذر تسجيل الدخول حاليًا. حاول مرة أخرى.");
@@ -49,15 +53,12 @@ export default function Login() {
           <span className="nova-auth-brand-mark"><Sparkles size={20} /></span>
           <span>NOVA<span className="nova-auth-brand-dot">.</span></span>
         </Link>
-
         <div className="nova-auth-heading">
           <span className="nova-auth-eyebrow"><LockKeyhole size={14} /> مساحة آمنة</span>
           <h1>تسجيل الدخول</h1>
           <p>أهلاً بعودتك. سجّل دخولك لمتابعة مشاريعك ومساحتك الخاصة.</p>
         </div>
-
-        {notice && <p role="status" className="nova-auth-notice">{notice}</p>}
-
+        {(notice || verificationNotice) && <p role="status" className="nova-auth-notice">{notice || verificationNotice}</p>}
         <form onSubmit={submit} className="nova-auth-form">
           <label>
             <span>البريد الإلكتروني</span>
@@ -67,20 +68,27 @@ export default function Login() {
             <span>كلمة المرور</span>
             <input required type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} placeholder="أدخل كلمة المرور" />
           </label>
-          {error && <p role="alert" className="nova-auth-error">{error}</p>}
+          {(error || verificationError) && <p role="alert" className="nova-auth-error">{error || verificationError}</p>}
           <button disabled={loading} type="submit" className="nova-auth-submit">
             {loading ? "جارٍ تسجيل الدخول..." : "دخول إلى حسابك"}
             {!loading && <ArrowUpRight size={18} />}
           </button>
         </form>
-
         <div className="nova-auth-links">
           <Link href="/register">إنشاء حساب جديد</Link>
           <Link href="/forgot-password">نسيت كلمة المرور؟</Link>
         </div>
-        <p className="nova-auth-verify">لم تؤكد بريدك؟ <Link href="/verify-email">إعادة إرسال رابط التأكيد</Link></p>
+        <p className="nova-auth-verify">تأكيد البريد الإلكتروني: <Link href="/verify-email">غير مفعّل حاليًا</Link></p>
         <Link href="/" className="nova-auth-back">العودة إلى الموقع الرئيسي</Link>
       </div>
     </main>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={<main className="nova-auth-page"><p>جارٍ تحميل صفحة تسجيل الدخول...</p></main>}>
+      <LoginContent />
+    </Suspense>
   );
 }

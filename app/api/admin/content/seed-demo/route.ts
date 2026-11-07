@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
 import {auth} from "@/auth";
 import {prisma} from "@/lib/prisma";
-async function allowed(){const s=await auth();return !!s?.user&&["ADMIN","SUPER_ADMIN"].includes((s.user as any).role);}
+async function allowed(){const s=await auth();return !!s?.user&&["ADMIN","SUPER_ADMIN"].includes(s.user.role);}
 const demos=[
  ["demo-brand-luma","Luma — هوية بصرية","نموذج تجريبي لهوية علامة عصرية","photo-1558655146-d09347e92766",null],
  ["demo-architecture-north","North — موقع معماري","نموذج تجريبي لموقع مكتب معماري","photo-1600607687939-ce8a6c25118c",null],
