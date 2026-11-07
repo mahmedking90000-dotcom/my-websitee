@@ -3,10 +3,11 @@ import { z } from "zod";
 import { hash } from "bcryptjs";
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { strongPasswordSchema } from "@/lib/password-policy";
 
 const schema = z.object({
   token: z.string().regex(/^[a-f0-9]{64}$/i),
-  password: z.string().min(10).max(128)
+  password: strongPasswordSchema
 });
 
 export async function POST(request: Request) {
@@ -35,7 +36,6 @@ export async function POST(request: Request) {
         data: { passwordHash }
       });
 
-      // Retain cleanup for any adapter-backed sessions if the strategy changes.
       await transaction.session.deleteMany({ where: { userId: row.userId } });
       return true;
     });
@@ -47,7 +47,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "تم تغيير كلمة المرور. سجّل الدخول مرة أخرى." });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "الرابط غير صالح أو كلمة المرور لا تستوفي الشروط." }, { status: 400 });
+      return NextResponse.json(
+        { error: error.issues[0]?.message || "الرابط غير صالح أو كلمة المرور لا تستوفي الشروط." },
+        { status: 400 }
+      );
     }
     console.error("Password reset failed", error);
     return NextResponse.json({ error: "تعذر تغيير كلمة المرور حاليًا." }, { status: 500 });
