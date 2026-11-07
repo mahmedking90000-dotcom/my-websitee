@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { MessageCircle, Send, RefreshCw } from "lucide-react";
 
 type ProjectChatMessage = {
