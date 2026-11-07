@@ -1,19 +1,19 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type RegisterValues = { name: string; email: string; phone: string; password: string };
 
 export default function Register() {
+  const router = useRouter();
   const [values, setValues] = useState<RegisterValues>({ name: "", email: "", phone: "", password: "" });
-  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage("");
     setError("");
     setLoading(true);
     try {
@@ -23,8 +23,11 @@ export default function Register() {
         body: JSON.stringify(values)
       });
       const data = await response.json();
-      if (!response.ok) setError(data.error || "تعذر إنشاء الحساب.");
-      else setMessage(data.message || "تم إنشاء الحساب. راجع بريدك لتأكيده.");
+      if (!response.ok) {
+        setError(data.error || "تعذر إنشاء الحساب.");
+      } else {
+        router.push("/verify-email?email=" + encodeURIComponent(data.email || values.email.trim().toLowerCase()));
+      }
     } catch {
       setError("تعذر الاتصال بالخادم. حاول مرة أخرى.");
     } finally {
@@ -37,6 +40,7 @@ export default function Register() {
       <form onSubmit={submit} className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[.06] p-8">
         <Link href="/" className="font-bold tracking-widest">NOVA.</Link>
         <h1 className="mt-8 text-3xl font-bold">إنشاء حساب</h1>
+        <p className="mt-2 text-sm leading-7 text-white/55">أنشئ حسابك، وسنرسل إلى بريدك كود تأكيد من NOVA لتفعيل الحساب.</p>
         {([
           ["name", "الاسم الكامل", "text"],
           ["email", "البريد الإلكتروني", "email"],
@@ -55,12 +59,11 @@ export default function Register() {
             />
           </label>
         ))}
-        {message && <p role="status" className="mt-4 rounded-xl bg-emerald-400/10 p-3 text-sm text-emerald-200">{message}</p>}
         {error && <p role="alert" className="mt-4 rounded-xl bg-rose-400/10 p-3 text-sm text-rose-200">{error}</p>}
         <button disabled={loading} className="mt-6 w-full rounded-xl bg-white p-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60">
           {loading ? "جارٍ إنشاء الحساب..." : "إنشاء الحساب"}
         </button>
-        <p className="mt-5 text-sm text-white/60">لم تصلك رسالة التأكيد؟ <Link href="/verify-email" className="underline underline-offset-4">إعادة إرسالها</Link></p>
+        <p className="mt-5 text-sm text-white/60">لم يصلك كود التأكيد؟ <Link href="/verify-email" className="underline underline-offset-4">إعادة إرساله</Link></p>
         <p className="mt-3 text-sm text-white/60">لديك حساب؟ <Link href="/login" className="underline underline-offset-4">سجّل الدخول</Link></p>
       </form>
     </main>

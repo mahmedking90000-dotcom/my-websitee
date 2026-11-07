@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
-import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import {
+  createEmailCode,
+  EMAIL_CODE_MAX_ATTEMPTS,
+  EMAIL_CODE_RESEND_WAIT_MS,
+  EMAIL_CODE_TTL_MS,
+  hashEmailCode,
+  isSmtpConfigured,
+  sendNOVAEmailCode
+} from "@/lib/email-verification";
 
-const schema = z.object({ email: z.string().email() });
+const schema = z.object({ email: z.string().trim().email() });
 
 export async function POST(req: Request) {
   try {
@@ -11,68 +19,65 @@ export async function POST(req: Request) {
     const email = rawEmail.toLowerCase();
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // Keep the response identical for unknown, already verified, and eligible accounts.
-    const message = "إذا كان الحساب موجودًا ولم يتم تأكيده، فستصلك رسالة تحقق جديدة.";
+    const message = "إذا كان الحساب موجودًا ولم يتم تأكيده، فسيصلك كود تأكيد جديد.";
     if (!user || user.emailVerified) return NextResponse.json({ message });
 
-    const smtpReady = process.env.SMTP_HOST && process.env.SMTP_USER &&
-      process.env.SMTP_PASSWORD && process.env.SMTP_FROM;
-    if (!smtpReady) {
-      return NextResponse.json({ error: "إرسال البريد غير مُعد بعد. يلزم إضافة إعدادات SMTP في Vercel." }, { status: 503 });
+    if (!isSmtpConfigured()) {
+      return NextResponse.json({ error: "خدمة إرسال البريد غير مُعدّة بعد. أضف إعدادات SMTP في Vercel." }, { status: 503 });
     }
 
-    const recent = await prisma.emailVerificationToken.findFirst({
-      where: { userId: user.id, createdAt: { gt: new Date(Date.now() - 60_000) } },
-      orderBy: { createdAt: "desc" }
+    const now = new Date();
+    const windowStart = new Date(now.getTime() - 10 * 60 * 1000);
+    const failedAttempts = await prisma.emailVerificationToken.count({
+      where: {
+        userId: user.id,
+        tokenHash: { startsWith: "failed:" },
+        createdAt: { gt: windowStart }
+      }
     });
-    if (recent) {
-      return NextResponse.json({ error: "انتظر دقيقة قبل طلب رسالة أخرى." }, { status: 429 });
+    if (failedAttempts >= EMAIL_CODE_MAX_ATTEMPTS) {
+      return NextResponse.json({ error: "تم تجاوز عدد المحاولات. حاول مجددًا بعد 10 دقائق." }, { status: 429 });
     }
 
-    const token = randomBytes(32).toString("hex");
-    const tokenHash = createHash("sha256").update(token).digest("hex");
-    const tokenRow = await prisma.emailVerificationToken.create({
-      data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
+    const rows = await prisma.emailVerificationToken.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      take: 20
     });
+    const latestCode = rows.find(row => !row.tokenHash.startsWith("failed:"));
+    if (latestCode && latestCode.createdAt.getTime() > now.getTime() - EMAIL_CODE_RESEND_WAIT_MS) {
+      return NextResponse.json({ error: "انتظر دقيقة قبل طلب كود جديد." }, { status: 429 });
+    }
 
-    const baseUrl = process.env.AUTH_URL || new URL(req.url).origin;
-    const verifyUrl = new URL("/api/verify-email", baseUrl);
-    verifyUrl.searchParams.set("token", token);
-    const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-    })[char]!);
+    const code = createEmailCode();
+    const tokenHash = hashEmailCode(user.id, email, code);
+    const newRow = await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt: new Date(now.getTime() + EMAIL_CODE_TTL_MS)
+      }
+    });
 
     try {
-      const nodemailer = (await import("nodemailer")).default;
-      const port = Number(process.env.SMTP_PORT || 587);
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port,
-        secure: port === 465,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
-      });
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM,
-        to: user.email,
-        subject: "تأكيد البريد الإلكتروني - NOVA",
-        text: `مرحبًا ${user.name || ""}، أكد بريدك الإلكتروني من خلال الرابط: ${verifyUrl.toString()}`,
-        html: `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>مرحبًا ${escapeHtml(user.name || "")}</h2><p>اضغط على الرابط التالي لتأكيد بريدك الإلكتروني:</p><p><a href="${verifyUrl.toString()}">تأكيد البريد الإلكتروني</a></p><p>صلاحية الرابط 24 ساعة.</p></div>`
-      });
-      await prisma.emailVerificationToken.deleteMany({
-        where: { userId: user.id, id: { not: tokenRow.id } }
-      });
+      await sendNOVAEmailCode({ to: email, name: user.name || "", code });
     } catch (error) {
-      await prisma.emailVerificationToken.delete({ where: { id: tokenRow.id } }).catch(() => undefined);
-      console.error("Verification email delivery failed", error);
-      return NextResponse.json({ error: "تعذر إرسال الرسالة حاليًا. حاول مرة أخرى لاحقًا." }, { status: 502 });
+      await prisma.emailVerificationToken.delete({ where: { id: newRow.id } }).catch(() => undefined);
+      console.error("Verification code delivery failed", error);
+      return NextResponse.json({ error: "تعذر إرسال كود التأكيد الآن. حاول مرة أخرى لاحقًا." }, { status: 502 });
     }
+
+    const previousCodes = rows.filter(row => !row.tokenHash.startsWith("failed:"));
+    await Promise.all(previousCodes.map(row =>
+      prisma.emailVerificationToken.delete({ where: { id: row.id } }).catch(() => undefined)
+    ));
 
     return NextResponse.json({ message });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "اكتب بريدًا إلكترونيًا صحيحًا." }, { status: 400 });
     }
-    console.error("Resend verification failed", error);
-    return NextResponse.json({ error: "حدث خطأ أثناء طلب رسالة التحقق." }, { status: 500 });
+    console.error("Resend verification code failed", error);
+    return NextResponse.json({ error: "حدث خطأ أثناء طلب كود التأكيد." }, { status: 500 });
   }
 }

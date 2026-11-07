@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
-import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import {
+  createEmailCode,
+  EMAIL_CODE_TTL_MS,
+  hashEmailCode,
+  isSmtpConfigured,
+  sendNOVAEmailCode
+} from "@/lib/email-verification";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -11,18 +17,13 @@ const schema = z.object({
   password: z.string().min(10).max(128)
 });
 
-const escapeHtml = (value: string) => value.replace(/[&<>"']/g, char => ({
-  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-})[char]!);
-
 export async function POST(req: Request) {
   try {
     const values = schema.parse(await req.json());
-    const smtpReady = process.env.SMTP_HOST && process.env.SMTP_USER &&
-      process.env.SMTP_PASSWORD && process.env.SMTP_FROM;
-    if (!smtpReady) {
+
+    if (!isSmtpConfigured()) {
       return NextResponse.json(
-        { error: "التسجيل متوقف مؤقتًا حتى يتم إعداد خدمة إرسال البريد الإلكتروني." },
+        { error: "خدمة إرسال البريد غير مُعدّة بعد. أضف إعدادات SMTP في Vercel لتفعيل التسجيل." },
         { status: 503 }
       );
     }
@@ -31,7 +32,11 @@ export async function POST(req: Request) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return NextResponse.json(
-        { error: existing.emailVerified ? "البريد مسجل بالفعل. سجّل الدخول." : "البريد مسجل بالفعل ولم يتم تأكيده. استخدم صفحة إعادة إرسال رابط التأكيد." },
+        {
+          error: existing.emailVerified
+            ? "البريد مسجل بالفعل. سجّل الدخول."
+            : "البريد مسجل بالفعل ولم يتم تأكيده. افتح صفحة تأكيد البريد واطلب كودًا جديدًا."
+        },
         { status: 409 }
       );
     }
@@ -45,47 +50,40 @@ export async function POST(req: Request) {
       }
     });
 
-    const token = randomBytes(32).toString("hex");
-    const tokenHash = createHash("sha256").update(token).digest("hex");
-    await prisma.emailVerificationToken.create({
-      data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) }
+    const code = createEmailCode();
+    const tokenHash = hashEmailCode(user.id, email, code);
+    const tokenRow = await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt: new Date(Date.now() + EMAIL_CODE_TTL_MS)
+      }
     });
 
-    const verifyUrl = new URL("/api/verify-email", process.env.AUTH_URL || new URL(req.url).origin);
-    verifyUrl.searchParams.set("token", token);
-
     try {
-      const nodemailer = (await import("nodemailer")).default;
-      const port = Number(process.env.SMTP_PORT || 587);
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port,
-        secure: port === 465,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
-      });
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM,
-        to: email,
-        subject: "تأكيد البريد الإلكتروني - NOVA",
-        text: `مرحبًا ${values.name}، لتأكيد بريدك الإلكتروني افتح الرابط التالي: ${verifyUrl.toString()}`,
-        html: `<div dir="rtl" style="font-family:Arial,sans-serif;line-height:1.8"><h2>مرحبًا ${escapeHtml(values.name)}</h2><p>اضغط لتأكيد بريدك الإلكتروني:</p><p><a href="${verifyUrl.toString()}">تأكيد البريد الإلكتروني</a></p><p>صلاحية الرابط 24 ساعة.</p></div>`
-      });
+      await sendNOVAEmailCode({ to: email, name: values.name, code });
     } catch (error) {
-      await prisma.emailVerificationToken.delete({ where: { tokenHash } }).catch(() => undefined);
-      console.error("Registration verification email failed", error);
+      await prisma.emailVerificationToken.delete({ where: { id: tokenRow.id } }).catch(() => undefined);
+      console.error("Registration verification code email failed", error);
       return NextResponse.json(
-        { error: "تم حفظ الحساب، لكن تعذر إرسال رسالة التأكيد. استخدم صفحة إعادة إرسال الرابط بعد قليل." },
+        { error: "تعذر إرسال كود التأكيد الآن. حسابك لم يُفعّل؛ حاول إعادة إرسال الكود بعد ضبط خدمة البريد." },
         { status: 502 }
       );
     }
 
     return NextResponse.json(
-      { message: "تم إنشاء الحساب. راجع بريدك الإلكتروني واضغط رابط التأكيد قبل تسجيل الدخول." },
+      {
+        message: "تم إنشاء الحساب وإرسال كود التأكيد إلى بريدك الإلكتروني.",
+        email
+      },
       { status: 201 }
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "راجع البيانات، ويجب أن تتكون كلمة المرور من 10 أحرف على الأقل." }, { status: 400 });
+      return NextResponse.json(
+        { error: "راجع البيانات، ويجب أن تتكون كلمة المرور من 10 أحرف على الأقل." },
+        { status: 400 }
+      );
     }
     console.error("Registration failed", error);
     return NextResponse.json({ error: "تعذر إنشاء الحساب حاليًا." }, { status: 500 });

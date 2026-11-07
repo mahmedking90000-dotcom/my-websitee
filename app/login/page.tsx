@@ -11,8 +11,8 @@ function LoginContent() {
   const verification = searchParams.get("verify");
   const verificationNotice = verification === "success" ? "تم تأكيد بريدك الإلكتروني بنجاح. يمكنك تسجيل الدخول الآن." : "";
   const verificationError = verification === "expired"
-    ? "رابط التأكيد غير صالح أو انتهت صلاحيته. اطلب رابطًا جديدًا."
-    : verification === "invalid" ? "رابط التأكيد غير مكتمل. اطلب رسالة جديدة." : "";
+    ? "رابط التأكيد غير صالح أو انتهت صلاحيته. اطلب كودًا جديدًا."
+    : verification === "invalid" ? "بيانات التأكيد غير مكتملة. اطلب كودًا جديدًا." : "";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -75,7 +75,7 @@ function LoginContent() {
           <Link href="/register">إنشاء حساب جديد</Link>
           <Link href="/forgot-password">نسيت كلمة المرور؟</Link>
         </div>
-        <p className="nova-auth-verify">لم تؤكد بريدك؟ <Link href="/verify-email">إعادة إرسال رابط التأكيد</Link></p>
+        <p className="nova-auth-verify">لم تؤكد بريدك؟ <Link href="/verify-email">إدخال كود التأكيد أو إعادة إرساله</Link></p>
         <Link href="/" className="nova-auth-back">العودة إلى الموقع الرئيسي</Link>
       </div>
     </main>
