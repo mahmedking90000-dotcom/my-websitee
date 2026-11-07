@@ -485,3 +485,40 @@ html[data-theme="light"] .site-shell select optgroup {
   color: #171a2b !important;
   background-color: #ffffff !important;
 }
+
+
+/* Workspace-level bilingual layout and distinct chat sender colors. */
+.workspace-locale-root { min-height: 100%; }
+.workspace-locale-root[data-workspace-language="en"] .text-right { text-align: left !important; }
+.workspace-locale-root[data-workspace-language="en"] .border-r { border-right: 0 !important; border-left: 1px solid currentColor; }
+.chat-message-bubble { max-width: 88%; }
+.chat-message-own {
+  color: #f6f2ff !important;
+  background: linear-gradient(145deg, rgba(124, 94, 255, .28), rgba(95, 73, 170, .22)) !important;
+  border: 1px solid rgba(190, 170, 255, .34) !important;
+  box-shadow: 0 8px 24px rgba(65, 48, 120, .13);
+}
+.chat-message-other {
+  color: #e6fffb !important;
+  background: linear-gradient(145deg, rgba(13, 148, 136, .22), rgba(15, 118, 110, .16)) !important;
+  border: 1px solid rgba(94, 234, 212, .28) !important;
+  box-shadow: 0 8px 24px rgba(8, 90, 83, .10);
+}
+.chat-message-own .chat-message-meta { color: rgba(235, 225, 255, .66) !important; }
+.chat-message-other .chat-message-meta { color: rgba(204, 251, 241, .68) !important; }
+.chat-message-own .chat-message-body { color: #faf8ff !important; }
+.chat-message-other .chat-message-body { color: #e6fffb !important; }
+html[data-theme="light"] .chat-message-own {
+  color: #35245e !important;
+  background: linear-gradient(145deg, #f0eaff, #e7defe) !important;
+  border-color: rgba(109, 80, 181, .25) !important;
+}
+html[data-theme="light"] .chat-message-other {
+  color: #124a45 !important;
+  background: linear-gradient(145deg, #e5f8f3, #d9f2ed) !important;
+  border-color: rgba(15, 118, 110, .22) !important;
+}
+html[data-theme="light"] .chat-message-own .chat-message-meta { color: #76679b !important; }
+html[data-theme="light"] .chat-message-other .chat-message-meta { color: #477b73 !important; }
+html[data-theme="light"] .chat-message-own .chat-message-body { color: #2f214f !important; }
+html[data-theme="light"] .chat-message-other .chat-message-body { color: #124a45 !important; }

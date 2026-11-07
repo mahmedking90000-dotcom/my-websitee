@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import ProjectChat from "@/components/project-chat";
 import ProjectTracking from "@/components/project-tracking";
+import { WorkspaceStatus, WorkspaceText } from "@/components/workspace-preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -29,12 +30,12 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
   return (
     <>
       <h1 className="text-3xl font-bold">{project.name}</h1>
-      <p className="mt-2 text-white/50">{project.reference} · {project.status}</p>
+      <p className="mt-2 text-white/50">{project.reference} · <WorkspaceStatus status={project.status}/></p>
 
       <div className="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h2 className="font-bold">تفاصيل المشروع</h2>
+        <h2 className="font-bold"><WorkspaceText ar="تفاصيل المشروع" en="Project details"/></h2>
         <p className="mt-3 leading-8 text-white/70">{project.description}</p>
-        <p className="mt-3 text-sm text-white/50">نوع المشروع: {project.type}</p>
+        <p className="mt-3 text-sm text-white/50"><WorkspaceText ar="نوع المشروع:" en="Project type:"/> {project.type}</p>
       </div>
 
       <ProjectTracking

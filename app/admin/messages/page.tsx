@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import AdminMessageCenter from "@/components/admin-message-center";
+import { WorkspaceText } from "@/components/workspace-preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export default async function Messages() {
       id: project.id,
       name: project.name,
       reference: project.reference,
-      ownerName: project.owner.name ?? "عميل",
+      ownerName: project.owner.name ?? "",
       ownerEmail: project.owner.email,
       latestMessage: latest ? {
         body: latest.body,
@@ -56,27 +57,26 @@ export default async function Messages() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold">الرسائل والاستفسارات</h1>
-      <h2 className="mt-8 text-xl font-bold">مراسلة العملاء مباشرة</h2>
-      <p className="mt-2 text-sm text-white/45">محادثة مستقلة لكل مشروع بين العميل وفريق NOVA.</p>
-      <AdminMessageCenter conversations={conversations} />
-
-      <h2 className="mt-10 text-xl font-bold">طلبات التواصل ({contacts.length})</h2>
+      <h1 className="text-3xl font-bold"><WorkspaceText ar="الرسائل والاستفسارات" en="Messages & inquiries"/></h1>
+      <h2 className="mt-8 text-xl font-bold"><WorkspaceText ar="مراسلة العملاء مباشرة" en="Direct customer messaging"/></h2>
+      <p className="mt-2 text-sm text-white/45"><WorkspaceText ar="محادثة مستقلة لكل مشروع بين العميل وفريق NOVA." en="A separate conversation for each project between the customer and NOVA."/></p>
+      <AdminMessageCenter conversations={conversations}/>
+      <h2 className="mt-10 text-xl font-bold"><WorkspaceText ar="طلبات التواصل" en="Contact requests"/> ({contacts.length})</h2>
       <div className="mt-3 space-y-3">
         {contacts.map(item => (
           <article key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <div className="flex justify-between gap-3">
+            <div className="flex flex-wrap justify-between gap-3">
               <b>{item.name} · {item.subject || "استفسار"}</b>
-              <span className="text-xs text-white/40">{item.createdAt.toLocaleString("ar-EG")}</span>
+              <span className="text-xs text-white/40">{item.createdAt.toLocaleString("en-US")}</span>
             </div>
             <p className="mt-2 text-sm text-white/60">{item.email} {item.phone || ""}</p>
             <p className="mt-3 leading-7">{item.message}</p>
           </article>
         ))}
-        {!contacts.length && <p className="text-white/50">لا توجد استفسارات.</p>}
+        {!contacts.length && <p className="text-white/50"><WorkspaceText ar="لا توجد استفسارات." en="There are no inquiries."/></p>}
       </div>
 
-      <h2 className="mt-10 text-xl font-bold">محادثات المساعد ({chats.length})</h2>
+      <h2 className="mt-10 text-xl font-bold"><WorkspaceText ar="محادثات المساعد" en="Assistant conversations"/> ({chats.length})</h2>
       <div className="mt-3 space-y-3">
         {chats.map(conversation => (
           <article key={conversation.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
@@ -86,7 +86,7 @@ export default async function Messages() {
             ))}
           </article>
         ))}
-        {!chats.length && <p className="text-white/50">لا توجد محادثات محفوظة.</p>}
+        {!chats.length && <p className="text-white/50"><WorkspaceText ar="لا توجد محادثات محفوظة." en="There are no saved conversations."/></p>}
       </div>
     </>
   );

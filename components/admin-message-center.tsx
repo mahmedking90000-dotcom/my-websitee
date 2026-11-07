@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { MessageCircle, UserRound, ChevronLeft } from "lucide-react";
 import ProjectChat from "@/components/project-chat";
+import { useWorkspacePreferences } from "@/components/workspace-preferences";
 
 type Conversation = {
   id: string;
@@ -15,6 +16,7 @@ type Conversation = {
 };
 
 export default function AdminMessageCenter({ conversations: initialConversations }: { conversations: Conversation[] }) {
+  const { locale, t } = useWorkspacePreferences();
   const [conversations, setConversations] = useState(initialConversations);
   const [selectedId, setSelectedId] = useState(initialConversations[0]?.id ?? "");
   const selected = conversations.find(item => item.id === selectedId);
@@ -47,10 +49,10 @@ export default function AdminMessageCenter({ conversations: initialConversations
         <aside className="border-b border-white/10 lg:border-b-0 lg:border-l">
           <div className="border-b border-white/10 px-4 py-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold">محادثات المشاريع</h3>
+              <h3 className="font-bold">{t("projectConversations")}</h3>
               <span className="rounded-full bg-violet-300/15 px-2.5 py-1 text-xs text-violet-100">{conversations.length}</span>
             </div>
-            <p className="mt-1 text-xs text-white/40">القائمة تتحدث تلقائيًا عند وصول رسائل جديدة.</p>
+            <p className="mt-1 text-xs text-white/40">{t("inboxAuto")}</p>
           </div>
           <div className="max-h-[520px] overflow-y-auto p-2">
             {conversations.map(item => {
@@ -60,7 +62,7 @@ export default function AdminMessageCenter({ conversations: initialConversations
                   type="button"
                   key={item.id}
                   onClick={() => setSelectedId(item.id)}
-                  className={`mb-1 w-full rounded-xl border p-3 text-right transition ${active ? "border-violet-300/30 bg-violet-300/10" : "border-transparent hover:border-white/10 hover:bg-white/5"}`}
+                  className={`mb-1 w-full rounded-xl border p-3 text-start transition ${active ? "border-violet-300/30 bg-violet-300/10" : "border-transparent hover:border-white/10 hover:bg-white/5"}`}
                 >
                   <div className="flex items-start gap-3">
                     <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/5 text-violet-200"><UserRound size={18}/></span>
@@ -70,7 +72,7 @@ export default function AdminMessageCenter({ conversations: initialConversations
                         {item.unreadCount > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-violet-300 px-1 text-[10px] font-bold text-slate-950">{item.unreadCount}</span>}
                       </span>
                       <span className="mt-1 block truncate text-[11px] text-white/40">{item.name} · {item.reference}</span>
-                      <span className="mt-2 block truncate text-xs text-white/55">{item.latestMessage?.body ?? "لا توجد رسائل"}</span>
+                      <span className="mt-2 block truncate text-xs text-white/55">{item.latestMessage?.body ?? t("noMessagesYet")}</span>
                     </span>
                     <ChevronLeft size={15} className="mt-3 shrink-0 text-white/25"/>
                   </div>
@@ -80,8 +82,8 @@ export default function AdminMessageCenter({ conversations: initialConversations
             {!conversations.length && (
               <div className="px-4 py-12 text-center">
                 <MessageCircle size={28} className="mx-auto text-white/25"/>
-                <p className="mt-3 text-sm text-white/55">لا توجد محادثات مشاريع حتى الآن.</p>
-                <p className="mt-1 text-xs text-white/35">ستظهر المحادثة هنا عندما يرسل عميل رسالة من صفحة مشروعه.</p>
+                <p className="mt-3 text-sm text-white/55">{t("noConversations")}</p>
+                <p className="mt-1 text-xs text-white/35">{t("conversationWillAppear")}</p>
               </div>
             )}
           </div>
@@ -102,8 +104,8 @@ export default function AdminMessageCenter({ conversations: initialConversations
           ) : (
             <div className="flex min-h-[540px] flex-col items-center justify-center text-center">
               <MessageCircle size={36} className="text-violet-200/50"/>
-              <p className="mt-4 font-bold text-white/75">مركز رسائل NOVA</p>
-              <p className="mt-2 text-sm text-white/40">اختر محادثة من القائمة لعرض الرسائل والرد عليها.</p>
+              <p className="mt-4 font-bold text-white/75">NOVA</p>
+              <p className="mt-2 text-sm text-white/40">{locale === "ar" ? "اختر محادثة من القائمة لعرض الرسائل والرد عليها." : "Select a conversation to view and reply to messages."}</p>
             </div>
           )}
         </div>
