@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
+import ProjectChat from "@/components/project-chat";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
         ))}
         {!project.updates.length && <p className="text-white/50">لا توجد تحديثات بعد.</p>}
       </div>
+      <ProjectChat projectId={project.id} />
     </>
   );
 }
