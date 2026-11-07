@@ -20,7 +20,7 @@ export default function Register() {
     /[a-z]/.test(values.password) &&
     /[A-Z]/.test(values.password) &&
     /[0-9]/.test(values.password) &&
-    /[^A-Za-z0-9\\s]/.test(values.password);
+    /[\p{P}\p{S}]/u.test(values.password);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
