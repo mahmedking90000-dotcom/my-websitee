@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MessageCircle, UserRound, ChevronLeft } from "lucide-react";
 import ProjectChat from "@/components/project-chat";
 
@@ -14,9 +14,32 @@ type Conversation = {
   unreadCount: number;
 };
 
-export default function AdminMessageCenter({ conversations }: { conversations: Conversation[] }) {
-  const [selectedId, setSelectedId] = useState(conversations[0]?.id ?? "");
+export default function AdminMessageCenter({ conversations: initialConversations }: { conversations: Conversation[] }) {
+  const [conversations, setConversations] = useState(initialConversations);
+  const [selectedId, setSelectedId] = useState(initialConversations[0]?.id ?? "");
   const selected = conversations.find(item => item.id === selectedId);
+
+  const refreshConversations = useCallback(async () => {
+    try {
+      const response = await fetch("/api/admin/messages", { cache: "no-store" });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (Array.isArray(data.conversations)) {
+        setConversations(data.conversations);
+        setSelectedId(current => current || data.conversations[0]?.id || "");
+      }
+    } catch {
+      // Keep the last known inbox visible during a temporary network issue.
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshConversations();
+    const timer = window.setInterval(() => {
+      if (!document.hidden) void refreshConversations();
+    }, 7000);
+    return () => window.clearInterval(timer);
+  }, [refreshConversations]);
 
   return (
     <section className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-white/[.035]">
@@ -27,7 +50,7 @@ export default function AdminMessageCenter({ conversations }: { conversations: C
               <h3 className="font-bold">محادثات المشاريع</h3>
               <span className="rounded-full bg-violet-300/15 px-2.5 py-1 text-xs text-violet-100">{conversations.length}</span>
             </div>
-            <p className="mt-1 text-xs text-white/40">اختر عميلًا لفتح المحادثة والرد عليه.</p>
+            <p className="mt-1 text-xs text-white/40">القائمة تتحدث تلقائيًا عند وصول رسائل جديدة.</p>
           </div>
           <div className="max-h-[520px] overflow-y-auto p-2">
             {conversations.map(item => {
@@ -44,7 +67,7 @@ export default function AdminMessageCenter({ conversations }: { conversations: C
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2">
                         <span className="truncate text-sm font-bold text-white/90">{item.ownerName || item.ownerEmail}</span>
-                        {item.unreadCount > 0 && <span className="grid min-w-5 h-5 place-items-center rounded-full bg-violet-300 px-1 text-[10px] font-bold text-slate-950">{item.unreadCount}</span>}
+                        {item.unreadCount > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-violet-300 px-1 text-[10px] font-bold text-slate-950">{item.unreadCount}</span>}
                       </span>
                       <span className="mt-1 block truncate text-[11px] text-white/40">{item.name} · {item.reference}</span>
                       <span className="mt-2 block truncate text-xs text-white/55">{item.latestMessage?.body ?? "لا توجد رسائل"}</span>
@@ -79,7 +102,7 @@ export default function AdminMessageCenter({ conversations }: { conversations: C
           ) : (
             <div className="flex min-h-[540px] flex-col items-center justify-center text-center">
               <MessageCircle size={36} className="text-violet-200/50"/>
-              <p className="mt-4 font-bold text-white/75">مركز رسائل العملاء</p>
+              <p className="mt-4 font-bold text-white/75">مركز رسائل NOVA</p>
               <p className="mt-2 text-sm text-white/40">اختر محادثة من القائمة لعرض الرسائل والرد عليها.</p>
             </div>
           )}
