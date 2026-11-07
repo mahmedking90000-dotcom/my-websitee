@@ -2,46 +2,38 @@ import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import {
-  createEmailCode,
-  EMAIL_CODE_TTL_MS,
-  hashEmailCode,
-  isSmtpConfigured,
-  sendNOVAEmailCode
-} from "@/lib/email-verification";
+import { strongPasswordSchema } from "@/lib/password-policy";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(100),
-  email: z.string().trim().email(),
+  email: z.string().trim().email().max(254),
   phone: z.string().trim().max(30).optional(),
-  password: z.string().min(10).max(128)
+  password: strongPasswordSchema
 });
+
+function isUniqueConstraintError(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
+}
 
 export async function POST(req: Request) {
   try {
     const values = schema.parse(await req.json());
-
-    if (!isSmtpConfigured()) {
-      return NextResponse.json(
-        { error: "خدمة إرسال البريد غير مُعدّة بعد. أضف إعدادات SMTP في Vercel لتفعيل التسجيل." },
-        { status: 503 }
-      );
-    }
-
     const email = values.email.toLowerCase();
-    const existing = await prisma.user.findUnique({ where: { email } });
+
+    // Match existing addresses without regard to letter case before attempting creation.
+    const existing = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
+      select: { id: true }
+    });
+
     if (existing) {
       return NextResponse.json(
-        {
-          error: existing.emailVerified
-            ? "البريد مسجل بالفعل. سجّل الدخول."
-            : "البريد مسجل بالفعل ولم يتم تأكيده. افتح صفحة تأكيد البريد واطلب كودًا جديدًا."
-        },
+        { error: "هذا البريد مسجل بالفعل. سجّل الدخول بدل إنشاء حساب جديد." },
         { status: 409 }
       );
     }
 
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         name: values.name,
         email,
@@ -50,39 +42,26 @@ export async function POST(req: Request) {
       }
     });
 
-    const code = createEmailCode();
-    const tokenHash = hashEmailCode(user.id, email, code);
-    const tokenRow = await prisma.emailVerificationToken.create({
-      data: {
-        userId: user.id,
-        tokenHash,
-        expiresAt: new Date(Date.now() + EMAIL_CODE_TTL_MS)
-      }
-    });
-
-    try {
-      await sendNOVAEmailCode({ to: email, name: values.name, code });
-    } catch (error) {
-      await prisma.emailVerificationToken.delete({ where: { id: tokenRow.id } }).catch(() => undefined);
-      console.error("Registration verification code email failed", error);
-      return NextResponse.json(
-        { error: "تعذر إرسال كود التأكيد الآن. حسابك لم يُفعّل؛ حاول إعادة إرسال الكود بعد ضبط خدمة البريد." },
-        { status: 502 }
-      );
-    }
-
     return NextResponse.json(
       {
-        message: "تم إنشاء الحساب وإرسال كود التأكيد إلى بريدك الإلكتروني.",
+        message: "تم إنشاء حسابك بنجاح. يمكنك تسجيل الدخول الآن.",
         email
       },
       { status: 201 }
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
+      const firstIssue = error.issues[0]?.message;
       return NextResponse.json(
-        { error: "راجع البيانات، ويجب أن تتكون كلمة المرور من 10 أحرف على الأقل." },
+        { error: firstIssue || "راجع البيانات وكلمة المرور." },
         { status: 400 }
+      );
+    }
+    // The unique database constraint is the final safeguard against concurrent duplicate sign-ups.
+    if (isUniqueConstraintError(error)) {
+      return NextResponse.json(
+        { error: "هذا البريد مسجل بالفعل. سجّل الدخول بدل إنشاء حساب جديد." },
+        { status: 409 }
       );
     }
     console.error("Registration failed", error);
