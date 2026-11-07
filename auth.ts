@@ -19,7 +19,8 @@ const providers: NextAuthConfig["providers"] = [
       if (typeof credentials?.email !== "string" || typeof credentials?.password !== "string") return null;
       const email = credentials.email.trim().toLowerCase();
       const user = await prisma.user.findUnique({ where: { email } });
-      if (!user?.passwordHash || !user.emailVerified) return null;
+      // Email confirmation is temporarily inactive; a valid password is enough to sign in.
+      if (!user?.passwordHash) return null;
       if (!(await compare(credentials.password, user.passwordHash))) return null;
       return { id: user.id, name: user.name, email: user.email, role: user.role };
     }
